@@ -230,11 +230,6 @@
   </div>
 </section>
 
-<section id="orders">
-  <div class="sec-title">// Мои ордера</div>
-  <div id="list"></div>
-</section>
-
 <footer>DANILKA · NOT AFFILIATED WITH TENCENT</footer>
 </div>
 
@@ -244,9 +239,6 @@
   <div class="sep"></div>
   <button class="di" data-go="new">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/></svg>Ордер</button>
-  <div class="sep"></div>
-  <button class="di" data-go="orders">
-    <svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6"/></svg>Ордера</button>
   <button class="di" onclick="openModal()">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v.5M12 11v5"/></svg>Инфо</button>
 </div>
@@ -322,26 +314,11 @@ async function create(){
     if(!res.ok) throw 0;
     document.getElementById('fPid').value=''; document.getElementById('fNick').value='';
     toast('Ордер создан ✦ ' + p.uc.toLocaleString() + ' UC');
-    renderOrders(); go('orders');
+    renderOrders();
   }catch{ toast('Ошибка сервера, попробуй ещё раз'); }
   btn.disabled = false;
 }
 
-async function renderOrders(){
-  try{
-    const arr = await (await fetch(API + '/api/orders')).json();
-    document.getElementById('list').innerHTML = arr.length ? arr.map(o=>`
-      <div class="order">
-        <div class="ologo">${o.logo ? `<img src="${o.logo}">` : '<img class="ucic-s" src="/img/uc' + (o.uc>=1000?'1800':String(o.uc)) + '.webp" alt="UC">'}</div>
-        <div class="obody">
-          <div class="oname">${o.uc.toLocaleString()} UC · ${o.nick}</div>
-          <div class="ometa">${o.id} · ID ${o.pid} · ${o.pay} · ${new Date(o.ts).toLocaleString('ru-RU')}</div>
-        </div>
-        <div class="oprice">${fmt(o.price)}</div>
-        <span class="st ${o.status}">${o.status==='new'?'в работе':'выполнен'}</span>
-      </div>`).join('') : '<div class="empty">ордеров пока нет</div>';
-  }catch{ document.getElementById('list').innerHTML = '<div class="empty">нет связи с сервером</div>'; }
-}
 
 function go(id){
   document.getElementById(id).scrollIntoView({behavior:'smooth'});
@@ -361,8 +338,8 @@ let tt;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2000)}
 
-renderPacks(); renderOrders();
-setInterval(renderOrders, 5000);
+renderPacks();
+
 </script>
 </body>
 </html>
