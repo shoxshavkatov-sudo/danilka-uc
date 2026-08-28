@@ -17,16 +17,30 @@
     -webkit-text-size-adjust:100%}
   ::selection{background:#fff;color:#000}
   .bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(70% 45% at 50% -5%,rgba(255,255,255,.09),transparent 60%),radial-gradient(50% 30% at 50% 0%,rgba(52,245,160,.07),transparent 70%),#000}
-  /* character backdrop */
-  .char{
-    position:fixed;top:calc(58px + env(safe-area-inset-top,0px));right:-18px;z-index:-1;
-    height:44vh;max-height:480px;width:auto;pointer-events:none;
-    filter:drop-shadow(0 0 50px rgba(52,245,160,.2));
-    opacity:.55;
-    transform:scaleX(-1);
-    transition:opacity .5s;
-  }
-  @media(max-width:640px){.char{height:36vh;right:-26px;opacity:.45}}
+  /* ambient green glow orbs */
+  .glow-orb{position:fixed;border-radius:50%;pointer-events:none;z-index:-1;
+    background:radial-gradient(circle,rgba(52,245,160,.14) 0%,rgba(52,245,160,0) 70%);
+    animation:orbBreathe 8s ease-in-out infinite}
+  .o1{width:70vw;height:70vw;top:-28vw;left:-20vw}
+  .o2{width:55vw;height:55vw;bottom:-18vw;right:-15vw;animation-delay:-4s;
+    background:radial-gradient(circle,rgba(52,245,160,.09) 0%,rgba(52,245,160,0) 70%)}
+  @keyframes orbBreathe{
+    0%,100%{transform:scale(1);opacity:.8}
+    50%{transform:scale(1.18);opacity:1}}
+
+  /* hero title green shimmer */
+  h1{position:relative}
+  h1::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,transparent,var(--green),transparent);
+    background-size:200% 100%;
+    animation:titleScan 3.2s linear infinite}
+  @keyframes titleScan{from{background-position:200% 0}to{background-position:-200% 0}}
+
+  /* green pulse dot on brand */
+  .orb{animation:orbPulse 2.6s ease-in-out infinite}
+  @keyframes orbPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(52,245,160,.45)}
+    70%{box-shadow:0 0 0 12px rgba(52,245,160,0)}}
 
   /* floating green particles */
   .particles{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
@@ -238,7 +252,8 @@
 </head>
 <body>
 <div class="bg"></div>
-<img class="char" id="charImg" src="/img/character.png" alt="">
+<div class="glow-orb o1"></div>
+<div class="glow-orb o2"></div>
 <div class="particles" id="particles"></div>
 
 <div class="topbar">
@@ -494,8 +509,6 @@ function updateBuybar(){
 
 /* ---------- views ---------- */
 function go(v){
-  const char = document.getElementById('charImg');
-  if(char) char.style.opacity = (v === 'main') ? '' : '0.18';
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   document.getElementById('v-' + v).classList.add('on');
   document.querySelectorAll('.di').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
