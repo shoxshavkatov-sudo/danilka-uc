@@ -475,22 +475,6 @@
         <div class="days" id="streakDays"></div>
       </div>
 
-      <div style="height:14px"></div>
-      <div class="panel" style="padding:18px">
-        <div style="font-size:11px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:10px">Приглашай друзей</div>
-        <div class="st" style="font-size:12px;color:var(--dim);margin-bottom:12px">Друг делает первый заказ — <b style="color:var(--green)">тебе <span id="refBonus">50</span> ₽</b> на баланс</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <div id="refLink" style="flex:1;font-size:11px;color:var(--green);word-break:break-all;
-            background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:12px;padding:11px 13px">...</div>
-          <button class="qbtn" style="padding:11px 16px" onclick="copyRef()">Копировать</button>
-        </div>
-        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--dim)">
-          <span>Друзей: <b id="refCount" style="color:#fff">0</b></span>
-          <span>Заработано: <b id="refEarned" style="color:var(--green)">0 ₽</b></span>
-        </div>
-      </div>
-
-
       <div class="panel" style="padding:18px;margin-top:14px">
         <div style="font-size:11px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:12px">Пополнение</div>
         <div class="fg"><label>Сумма</label><input id="topAmt" placeholder="Например, 2000" inputmode="numeric"></div>
@@ -502,6 +486,21 @@
           <div class="promo-hint" id="promoHint"></div>
         </div>
         <button class="bigbtn" onclick="topUp()">Пополнить · <span id="topPayLbl">UZCARD</span></button>
+      </div>
+
+      <div style="height:14px"></div>
+      <div class="panel" style="padding:18px;margin-top:14px">
+        <div style="font-size:11px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:10px">Приглашай друзей</div>
+        <div class="st" style="font-size:12px;color:var(--dim);margin-bottom:12px">Друг делает первый заказ — <b style="color:var(--green)">тебе <span id="refBonus">50</span> ₽</b> на баланс</div>
+        <div style="display:flex;gap:8px;align-items:stretch">
+          <div id="refLink" style="flex:1;display:flex;align-items:center;font-size:11px;color:var(--green);word-break:break-all;
+            background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:12px;padding:10px 13px;line-height:1.4">...</div>
+          <button class="qbtn" style="padding:0 16px" onclick="copyRef()">Копировать</button>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--dim)">
+          <span>Друзей: <b id="refCount" style="color:#fff">0</b></span>
+          <span>Заработано: <b id="refEarned" style="color:var(--green)">0 ₽</b></span>
+        </div>
       </div>
     </div>
   </section>
@@ -627,24 +626,46 @@ function renderReferral(me){
   const su = `https://t.me/${me.botUsername}`;
   document.getElementById('supportLink2').href = su;
 }
-async function renderMyOrders(){
+let knownStatuses = JSON.parse(localStorage.getItem('danilka_ord_st') || '{}');
+async function renderMyOrders(notify){
   try{
     const arr = await (await fetch('/api/my/orders', { headers: H() })).json();
     document.getElementById('myOrders').innerHTML = arr.length ? arr.map(o => `
       <div class="myord">
         <div>
           <div class="t">${o.uc.toLocaleString('ru-RU')} UC</div>
-          <div class="m">${new Date(o.ts).toLocaleDateString('ru-RU')} · ${o.status === 'new' ? 'в работе' : 'выполнен'}</div>
+          <div class="m">${new Date(o.ts).toLocaleDateString('ru-RU')} · ${o.status === 'new' ? 'в работе' : 'выполнен ✓'}</div>
         </div>
-        <div class="pr" style="color:${o.status === 'done' ? 'var(--green)' : '#fff'}">${fmt(o.price)}</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="pr" style="color:${o.status === 'done' ? 'var(--green)' : '#fff'}">${fmt(o.price)}</div>
+          <button class="qbtn" style="padding:8px 12px;font-size:10px" onclick="repeatOrder(${o.uc})">Повторить</button>
+        </div>
       </div>`).join('') : '<div style="font-size:12px;color:var(--dim)">Пока пусто — сделай первый заказ</div>';
+    /* notify when admin completes an order */
+    if(notify){
+      arr.forEach(o => {
+        if(knownStatuses[o.id] === 'new' && o.status === 'done'){
+          haptic('ok');
+          toast(`${o.uc.toLocaleString('ru-RU')} UC зачислены ✓`);
+          confetti();
+        }
+      });
+    }
+    knownStatuses = Object.fromEntries(arr.map(o => [o.id, o.status]));
+    localStorage.setItem('danilka_ord_st', JSON.stringify(knownStatuses));
   }catch{}
 }
+function repeatOrder(uc){
+  const i = PACKS.findIndex(p => p.uc === uc);
+  if(i >= 0){ selectPack(i); go('main'); toast(`${uc.toLocaleString('ru-RU')} UC — заполни ID и жми Купить`); }
+}
+
 function copyRef(){
   const link = document.getElementById('refLink').textContent;
   navigator.clipboard?.writeText('https://' + link).then(() => { toast('Ссылка скопирована'); haptic('ok'); });
 }
 setInterval(refreshBalance, 10000);
+setInterval(() => renderMyOrders(true), 10000);
 
 /* ---------- packs ---------- */
 let sel = Math.min(5, Math.max(0, +(localStorage.getItem('danilka_lastpack') ?? 2)));
@@ -776,6 +797,7 @@ async function sendOrder(p, pay){
   if(!res.ok) throw 0;
 }
 
+/* ---------- daily gift: once per day, random bonus added to balance ---------- */
 /* ---------- promo codes ---------- */
 const PROMOS = { 'DANILKA': 10, 'UC5': 5, 'TELEGRAM': 7 };
 let promoBonus = 0;
