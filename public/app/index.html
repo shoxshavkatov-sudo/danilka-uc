@@ -400,6 +400,10 @@ const PACKS = [
 ];
 const fmt = n => n.toLocaleString('ru-RU') + ' ₽';
 
+/* ---------- api auth (Telegram initData) ---------- */
+const initData = tg?.initData || '';
+const H = () => ({ 'Content-Type': 'application/json', 'X-Init-Data': initData });
+
 /* ---------- saved account data ---------- */
 const fPid = document.getElementById('fPid'), fNick = document.getElementById('fNick');
 fPid.value = localStorage.getItem('danilka_pid') || '';
@@ -407,13 +411,16 @@ fNick.value = localStorage.getItem('danilka_nick') || '';
 fPid.addEventListener('input', () => localStorage.setItem('danilka_pid', fPid.value.trim()));
 fNick.addEventListener('input', () => localStorage.setItem('danilka_nick', fNick.value.trim()));
 
-/* ---------- balance ---------- */
-let balance = +(localStorage.getItem('danilka_bal') || 0);
+/* ---------- balance (server-side) ---------- */
+let balance = 0;
 let balAnim = null;
-const setBalance = v => {
-  const from = balance;
-  balance = v; localStorage.setItem('danilka_bal', v);
-  /* animated counter */
+function renderBalance(){
+  document.getElementById('balTop').textContent = fmt(balance);
+  document.getElementById('balBig').textContent = fmt(balance);
+  document.getElementById('balanceNote').textContent = 'Баланс: ' + fmt(balance);
+}
+const animateBalance = v => {
+  const from = balance; balance = v;
   cancelAnimationFrame(balAnim);
   const t0 = performance.now(), dur = 700;
   const tick = t => {
@@ -426,11 +433,14 @@ const setBalance = v => {
   balAnim = requestAnimationFrame(tick);
   document.getElementById('balanceNote').textContent = 'Баланс: ' + fmt(v);
 };
-function renderBalance(){
-  document.getElementById('balTop').textContent = fmt(balance);
-  document.getElementById('balBig').textContent = fmt(balance);
-  document.getElementById('balanceNote').textContent = 'Баланс: ' + fmt(balance);
+async function refreshBalance(){
+  try{
+    const r = await fetch('/api/me', { headers: H() });
+    const j = await r.json();
+    if(j.balance !== balance){ animateBalance(j.balance); balance = j.balance; renderBalance(); }
+  }catch{}
 }
+setInterval(refreshBalance, 10000);
 
 /* ---------- packs ---------- */
 let sel = 2;
@@ -510,7 +520,7 @@ async function confirmPay(){
   btn.disabled = true;
   try{
     await sendOrder(p, pay);
-    if(payMethod === 'balance') setBalance(balance - p.price);
+    if(payMethod === 'balance') await refreshBalance();
     document.getElementById('okText').textContent =
       p.uc.toLocaleString() + ' UC летят на аккаунт · ' + fmt(p.price);
     go('success');
@@ -521,7 +531,7 @@ async function confirmPay(){
 }
 async function sendOrder(p, pay){
   const res = await fetch('/api/orders', {
-    method:'POST', headers:{'Content-Type':'application/json'},
+    method:'POST', headers:H(),
     body: JSON.stringify({
       pid: document.getElementById('fPid').value.trim(),
       nick: document.getElementById('fNick').value.trim(),
@@ -557,15 +567,55 @@ function renderQuick(){
   document.getElementById('quick').innerHTML = QUICK.map(q =>
     `<button class="qbtn ${q===quickSel?'sel':''}" onclick="quickSel=${q};renderQuick()">${q.toLocaleString('ru-RU')} ₽</button>`).join('');
 }
-function topUp(){
+let paying = false;
+async function topUp(){
+  if(paying) return;
   const custom = +document.getElementById('topAmt').value;
   const amount = custom > 0 ? custom : quickSel;
   if(amount < 50) return toast('Минимум 50 ₽');
-  /* имитация эквайринга — деньги сразу на балансе */
-  setBalance(balance + amount);
+  const tab = payTab, method = payMethodTop;
+  paying = true;
+  try{
+    if(tab === 'crypto'){
+      const r = await fetch('/api/deposit/crypto', { method:'POST', headers:H(),
+        body: JSON.stringify({ amount, asset: method }) });
+      const j = await r.json();
+      if(!r.ok) return toast(j.error || 'Ошибка инвойса');
+      toast('Открываю оплату ' + method);
+      tg?.openTelegramLink?.(j.payUrl) || window.open(j.payUrl, '_blank');
+      await pollCrypto(j.invoiceId);
+    } else if(tab === 'uz' || tab === 'ru'){
+      /* карты: реальный эквайринг через мерчанта — пока через Stars/крипту */
+      const r = await fetch('/api/deposit/stars', { method:'POST', headers:H(),
+        body: JSON.stringify({ amount }) });
+      const j = await r.json();
+      if(!r.ok) return toast(j.error || 'Ошибка инвойса');
+      if(tg?.openInvoice){
+        tg.openInvoice(j.link, async status => {
+          if(status === 'paid'){ haptic('ok'); toast('Баланс + ' + fmt(amount)); await refreshBalance(); }
+          else if(status === 'failed') toast('Оплата не прошла');
+        });
+      } else {
+        window.open(j.link, '_blank');
+        toast('Оплати и вернись — баланс обновится сам');
+        const t = setInterval(async () => { await refreshBalance(); }, 4000);
+        setTimeout(() => clearInterval(t), 180000);
+      }
+    }
+  } catch { toast('Ошибка соединения'); }
   document.getElementById('topAmt').value = '';
-  haptic('ok');
-  toast(payMethodTop + ' · баланс + ' + fmt(amount));
+  paying = false;
+}
+async function pollCrypto(invoiceId){
+  toast('Ждём оплату... баланс обновится сам');
+  for(let i = 0; i < 60; i++){
+    await new Promise(r => setTimeout(r, 5000));
+    try{
+      const r = await fetch('/api/deposit/crypto/check?invoice_id=' + invoiceId, { headers: H() });
+      const j = await r.json();
+      if(j.paid){ haptic('ok'); toast('Баланс + ' + fmt(j.credited)); await refreshBalance(); return; }
+    }catch{}
+  }
 }
 
 function confetti(){
@@ -590,7 +640,7 @@ let tt;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2000)}
 
-renderPacks(); renderBalance(); renderQuick(); renderTopLbl();
+renderPacks(); renderBalance(); renderQuick(); renderTopLbl(); refreshBalance();
 </script>
 </body>
 </html>
