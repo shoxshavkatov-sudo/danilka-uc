@@ -94,6 +94,15 @@
   .view.on{display:block;animation:viewIn .34s cubic-bezier(.2,1,.3,1)}
   @keyframes viewIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
+  .promo-hint{font-size:11px;color:var(--green);min-height:16px;letter-spacing:.04em}
+  .streak-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:13px 16px;
+    border-radius:16px;border:1px solid var(--line);background:var(--glass)}
+  .streak-row .st{flex:1;font-size:11px;color:var(--dim);line-height:1.4}
+  .streak-row .st b{color:var(--green)}
+  .streak-row .days{display:flex;gap:4px}
+  .streak-row .day{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.12)}
+  .streak-row .day.on{background:var(--green);box-shadow:0 0 8px var(--green-glow)}
+
   .best-badge{margin-top:6px;font-size:8px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
     color:#04160c;background:linear-gradient(180deg,#8dffc8,#34f5a0);padding:3px 9px;border-radius:999px;
     box-shadow:0 0 12px rgba(52,245,160,.4);animation:badgePulse 2.2s ease-in-out infinite}
@@ -439,8 +448,20 @@
 
       <div style="height:18px"></div>
       <div class="quick" id="quick"></div>
+      <div class="streak-row">
+        <span class="flame">🔥</span>
+        <div class="st">Ежедневный бонус: <b id="streakPct">+0%</b> к пополнению</div>
+        <div class="days" id="streakDays"></div>
+      </div>
       <div style="height:14px"></div>
       <div class="fg"><label>Другая сумма</label><input id="topAmt" placeholder="Например, 2000" inputmode="numeric"></div>
+      <div class="fg"><label>Промокод</label>
+        <div style="display:flex;gap:8px">
+          <input id="promoInput" placeholder="DANILKA" style="flex:1;text-transform:uppercase">
+          <button class="qbtn" style="padding:0 16px" onclick="applyPromo()">OK</button>
+        </div>
+        <div class="promo-hint" id="promoHint"></div>
+      </div>
       <button class="bigbtn" onclick="topUp()">Пополнить · <span id="topPayLbl">UZCARD</span></button>
     </div>
   </section>
@@ -678,6 +699,45 @@ async function sendOrder(p, pay){
   if(!res.ok) throw 0;
 }
 
+/* ---------- promo codes ---------- */
+const PROMOS = { 'DANILKA': 10, 'UC5': 5, 'TELEGRAM': 7 };
+let promoBonus = 0;
+function applyPromo(){
+  const code = (document.getElementById('promoInput').value || '').trim().toUpperCase();
+  const hint = document.getElementById('promoHint');
+  if(PROMOS[code]){
+    promoBonus = PROMOS[code];
+    hint.textContent = `✓ Промокод активен: +${promoBonus}% к каждому пополнению`;
+    localStorage.setItem('danilka_promo', code);
+    haptic('ok');
+  } else {
+    promoBonus = 0;
+    localStorage.removeItem('danilka_promo');
+    hint.textContent = code ? '✗ Такого промокода нет' : '';
+  }
+}
+
+/* ---------- daily streak ---------- */
+function touchStreak(){
+  const today = new Date().toDateString();
+  const last = localStorage.getItem('danilka_streak_day');
+  let n = +(localStorage.getItem('danilka_streak_n') || 0);
+  if(last === today) return n;
+  const yesterday = new Date(Date.now() - 864e5).toDateString();
+  n = (last === yesterday) ? Math.min(7, n + 1) : 1;
+  localStorage.setItem('danilka_streak_day', today);
+  localStorage.setItem('danilka_streak_n', n);
+  return n;
+}
+function renderStreak(){
+  const n = touchStreak();
+  const pct = n - 1;
+  document.getElementById('streakPct').textContent = '+' + pct + '%';
+  document.getElementById('streakDays').innerHTML =
+    Array.from({length: 7}, (_, i) => `<div class="day ${i < n ? 'on' : ''}"></div>`).join('');
+  return pct;
+}
+
 /* ---------- profile: tabs + payment ---------- */
 const QUICK = [300, 500, 1000, 3000];
 let quickSel = 1000;
@@ -709,8 +769,11 @@ let paying = false;
 async function topUp(){
   if(paying) return;
   const custom = +document.getElementById('topAmt').value;
-  const amount = custom > 0 ? custom : quickSel;
-  if(amount < 50) return toast('Минимум 50 ₽');
+  const base = custom > 0 ? custom : quickSel;
+  if(base < 50) return toast('Минимум 50 ₽');
+  const streakPct = renderStreak();
+  const bonusPct = Math.min(13, promoBonus + streakPct);
+  const amount = Math.round(base * (1 + bonusPct / 100));
   const tab = payTab, method = payMethodTop;
   paying = true;
   try{
@@ -719,7 +782,7 @@ async function topUp(){
         body: JSON.stringify({ amount, asset: method }) });
       const j = await r.json();
       if(!r.ok) return toast(j.error || 'Ошибка инвойса');
-      toast('Открываю оплату ' + method);
+      toast('Открываю оплату ' + method + (bonusPct ? ' · бонус +' + bonusPct + '%' : ''));
       tg?.openTelegramLink?.(j.payUrl) || window.open(j.payUrl, '_blank');
       await pollCrypto(j.invoiceId);
     } else if(tab === 'ru'){
@@ -730,7 +793,7 @@ async function topUp(){
       if(!r.ok) return toast(j.error || 'Ошибка инвойса');
       if(tg?.openInvoice){
         tg.openInvoice(j.link, async status => {
-          if(status === 'paid'){ haptic('ok'); toast('Баланс + ' + fmt(amount)); await refreshBalance(); }
+          if(status === 'paid'){ haptic('ok'); toast(bonusPct ? `Баланс + ${fmt(amount)} (бонус +${bonusPct}%)` : 'Баланс + ' + fmt(amount)); await refreshBalance(); }
           else if(status === 'failed') toast('Оплата не прошла');
         });
       } else {
@@ -825,7 +888,11 @@ document.head.appendChild(rippleStyle);
   }
 })();
 
-renderPacks(); renderBalance(); renderQuick(); renderTopLbl(); refreshBalance();
+renderPacks(); renderBalance(); renderQuick(); renderTopLbl(); refreshBalance(); renderStreak();
+(function(){
+  const saved = localStorage.getItem('danilka_promo');
+  if(saved){ document.getElementById('promoInput').value = saved; applyPromo(); }
+})();
 requestAnimationFrame(moveDockPill);
 setTimeout(moveDockPill, 150);
 window.addEventListener('resize', moveDockPill);
