@@ -134,9 +134,30 @@
     box-shadow:inset 0 1px 0 rgba(255,255,255,.12);transition:.18s;position:relative}
   .pack:active{transform:scale(.96)}
   .pack:hover{border-color:rgba(255,255,255,.3)}
-  .pack.sel{background:linear-gradient(150deg,rgba(52,245,160,.16),rgba(52,245,160,.04));
-    border-color:var(--green-dim);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 0 22px var(--green-glow)}
+  .pack{overflow:hidden}
+  .pack.sel{border-color:var(--green-dim);animation:selGlow 2.4s ease-in-out infinite}
+  /* liquid green flowing inside */
+  .pack.sel::before{content:"";position:absolute;inset:0;z-index:0;
+    background:linear-gradient(120deg,
+      rgba(52,245,160,.05) 0%,rgba(52,245,160,.22) 25%,rgba(124,255,196,.1) 45%,
+      rgba(52,245,160,.28) 65%,rgba(52,245,160,.06) 100%);
+    background-size:280% 280%;
+    animation:liquidFlow 3.4s linear infinite}
+  /* sweeping highlight */
+  .pack.sel::after{content:"";position:absolute;inset:-40%;
+    background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.16) 50%,transparent 58%);
+    animation:sweepLight 2.8s ease-in-out infinite;z-index:0}
+  .pack.sel > *{position:relative;z-index:1}
+  @keyframes liquidFlow{from{background-position:0% 50%}to{background-position:280% 50%}}
+  @keyframes sweepLight{0%{transform:translateX(-80%) rotate(4deg)}55%,100%{transform:translateX(80%) rotate(4deg)}}
+  @keyframes selGlow{
+    0%,100%{box-shadow:0 0 14px rgba(52,245,160,.22), inset 0 1px 0 rgba(255,255,255,.12)}
+    50%{box-shadow:0 0 30px rgba(52,245,160,.45), inset 0 1px 0 rgba(255,255,255,.12)}}
+  /* icon pop when selected */
+  .pack.sel .ucwrap{animation:iconPop .45s cubic-bezier(.3,1.6,.4,1)}
+  @keyframes iconPop{0%{transform:scale(.75)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+  .pack.sel .ucic{animation:selBob 2.6s ease-in-out infinite}
+  @keyframes selBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
   .pack.sel .uc{color:var(--green)}
   .pack.sel .p{color:var(--green)}
   .pack.sel .chk{display:flex}
