@@ -21,7 +21,17 @@
     -webkit-mask-image:radial-gradient(ellipse 90% 55% at 50% 0%,#000 25%,transparent 70%)}
   .wrap{max-width:520px;margin:0 auto;padding:0 18px}
   .view{display:none}
-  .view.on{display:block}
+  .view.on{display:block;animation:viewIn .34s cubic-bezier(.2,1,.3,1)}
+  @keyframes viewIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  .pack{opacity:0;animation:packIn .45s cubic-bezier(.2,1,.3,1) forwards}
+  @keyframes packIn{from{opacity:0;transform:translateY(16px) scale(.94)}to{opacity:1;transform:none}}
+
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:95;overflow:hidden}
+  .conf{position:absolute;width:8px;height:14px;border-radius:2px;animation:confFall linear forwards}
+  @keyframes confFall{
+    0%{transform:translateY(-20px) rotate(0);opacity:1}
+    100%{transform:translateY(105vh) rotate(720deg);opacity:.4}}
 
   .topbar{position:sticky;top:10px;z-index:60;margin:10px 12px 0;
     display:flex;align-items:center;justify-content:space-between;
@@ -175,12 +185,13 @@
   .di.active{color:#000;background:#fff;box-shadow:0 4px 14px rgba(255,255,255,.25)}
   .sep{width:1px;height:30px;background:rgba(255,255,255,.15)}
 
-  .toast{position:fixed;bottom:180px;left:50%;transform:translateX(-50%) translateY(60px);z-index:100;
+  .toast{position:fixed;bottom:180px;left:50%;transform:translateX(-50%) translateY(20px);z-index:100;
     padding:12px 22px;border-radius:15px;font-size:12px;font-weight:700;letter-spacing:.08em;
     background:rgba(0,0,0,.85);border:1px solid rgba(255,255,255,.4);color:#fff;
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-    transition:transform .28s cubic-bezier(.2,1.4,.4,1);pointer-events:none}
-  .toast.show{transform:translateX(-50%) translateY(0)}
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .25s, transform .28s cubic-bezier(.2,1.4,.4,1), visibility .25s}
+  .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
   footer{padding:24px 0 40px;text-align:center;color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase}
 </style>
 </head>
@@ -349,12 +360,25 @@
 <script>
 const tg = window.Telegram?.WebApp;
 if(tg){ tg.ready(); tg.expand(); }
+const haptic = (type) => {
+  try{
+    if(type === 'ok' && tg?.HapticFeedback) return tg.HapticFeedback.notificationOccurred('success');
+    tg?.HapticFeedback?.impactOccurred(type || 'light');
+  }catch{}
+};
 
 const PACKS = [
   {uc:60,bonus:'',price:129,n:1},{uc:325,bonus:'+25',price:599,n:2},{uc:660,bonus:'+60',price:1199,n:3},
   {uc:1800,bonus:'+300',price:2899,n:6},{uc:3850,bonus:'+850',price:5799,n:9},{uc:8100,bonus:'+2100',price:11499,n:12},
 ];
 const fmt = n => n.toLocaleString('ru-RU') + ' ₽';
+
+/* ---------- saved account data ---------- */
+const fPid = document.getElementById('fPid'), fNick = document.getElementById('fNick');
+fPid.value = localStorage.getItem('danilka_pid') || '';
+fNick.value = localStorage.getItem('danilka_nick') || '';
+fPid.addEventListener('input', () => localStorage.setItem('danilka_pid', fPid.value.trim()));
+fNick.addEventListener('input', () => localStorage.setItem('danilka_nick', fNick.value.trim()));
 
 /* ---------- balance ---------- */
 let balance = +(localStorage.getItem('danilka_bal') || 0);
@@ -368,13 +392,13 @@ function renderBalance(){
 /* ---------- packs ---------- */
 let sel = 2;
 function selectPack(i){
-  sel = i;
+  sel = i; haptic('light');
   document.querySelectorAll('.pack').forEach((el,idx)=>el.classList.toggle('sel', idx===i));
   updateBuybar();
 }
 function renderPacks(){
   document.getElementById('packs').innerHTML = PACKS.map((p,i)=>`
-    <div class="pack ${i===sel?'sel':''}" onclick="selectPack(${i})">
+    <div class="pack ${i===sel?'sel':''}" style="animation-delay:${i*70}ms" onclick="selectPack(${i})">
       <div class="chk"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
       <img class="ucic" style="width:${44+p.n*6}px;height:${34+p.n*4.5}px" src="/img/uc${p.uc}.webp" alt="UC" loading="eager" decoding="async">
       <div class="uc">${p.uc>=1000?(p.uc/1000)+'K':p.uc}</div>
@@ -429,6 +453,8 @@ async function confirmPay(){
     document.getElementById('okText').textContent =
       p.uc.toLocaleString() + ' UC летят на аккаунт · ' + fmt(p.price);
     go('success');
+    haptic('ok');
+    confetti();
   }catch{ toast('Ошибка сервера, попробуй ещё раз'); }
   btn.disabled = false;
 }
@@ -450,7 +476,7 @@ let payTab = 'uz';
 let payMethodTop = 'UZCARD';
 
 function pickTab(t){
-  payTab = t;
+  payTab = t; haptic('light');
   document.querySelectorAll('.ptab').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
   document.querySelectorAll('.pm-pane').forEach(p=>p.classList.toggle('on', p.id === 'pane-' + t));
   const idx = [...document.querySelectorAll('.ptab')].findIndex(b=>b.dataset.tab===t);
@@ -477,7 +503,25 @@ function topUp(){
   /* имитация эквайринга — деньги сразу на балансе */
   setBalance(balance + amount);
   document.getElementById('topAmt').value = '';
+  haptic('ok');
   toast(payMethodTop + ' · баланс + ' + fmt(amount));
+}
+
+function confetti(){
+  const box = document.createElement('div');
+  box.className = 'confetti';
+  const colors = ['#fff', '#ffcc4d', '#7c5cff', '#34f5a0'];
+  for(let i = 0; i < 40; i++){
+    const c = document.createElement('div');
+    c.className = 'conf';
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (1.2 + Math.random()*1.4) + 's';
+    c.style.animationDelay = Math.random()*0.5 + 's';
+    box.appendChild(c);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 3200);
 }
 
 /* ---------- toast ---------- */
