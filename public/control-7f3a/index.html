@@ -289,7 +289,7 @@ function render(all){
   document.getElementById('sAll').textContent = all.length;
   document.getElementById('sNew').textContent = all.filter(o=>o.status==='new').length;
   document.getElementById('sDone').textContent = all.filter(o=>o.status==='done').length;
-  document.getElementById('sRev').textContent = '$' + all.filter(o=>o.status==='done').reduce((s,o)=>s+o.price,0).toFixed(2);
+  document.getElementById('sRev').textContent = all.filter(o=>o.status==='done').reduce((s,o)=>s+o.price,0).toLocaleString('ru-RU') + ' ₽';
   document.getElementById('count').textContent = arr.length + ' показано';
   document.getElementById('list').innerHTML = arr.length ? arr.map(o=>`
     <div class="order ${o.status}">
@@ -298,7 +298,7 @@ function render(all){
         <div class="oname">${o.uc.toLocaleString()} UC ${o.bonus?'· '+o.bonus:''} — ${o.nick}</div>
         <div class="ometa">${o.id} · ID ${o.pid} · ${o.pay} · ${new Date(o.ts).toLocaleString('ru-RU')}</div>
       </div>
-      <div class="oprice">$${o.price.toFixed(2)}</div>
+      <div class="oprice">${o.price.toLocaleString('ru-RU')} ₽</div>
       <span class="st ${o.status}">${o.status==='new'?'в работе':'выполнен'}</span>
       <div class="act">
         <button class="abtn ok" onclick="toggle('${o.id}')">

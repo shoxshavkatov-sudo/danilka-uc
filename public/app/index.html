@@ -261,10 +261,10 @@ const tg = window.Telegram?.WebApp;
 if(tg){ tg.ready(); tg.expand(); }
 
 const PACKS = [
-  {uc:60,bonus:'',price:0.99,n:1},{uc:325,bonus:'+25',price:4.99,n:2},{uc:660,bonus:'+60',price:9.99,n:3},
-  {uc:1800,bonus:'+300',price:24.99,n:6},{uc:3850,bonus:'+850',price:49.99,n:9},{uc:8100,bonus:'+2100',price:99.99,n:12},
+  {uc:60,bonus:'',price:129,n:1},{uc:325,bonus:'+25',price:599,n:2},{uc:660,bonus:'+60',price:1199,n:3},
+  {uc:1800,bonus:'+300',price:2899,n:6},{uc:3850,bonus:'+850',price:5799,n:9},{uc:8100,bonus:'+2100',price:11499,n:12},
 ];
-const fmt = n => '$' + n.toFixed(2);
+const fmt = n => n.toLocaleString('ru-RU') + ' ₽';
 const API = '';
 
 let sel = 2;
