@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: danilka-uc
+    runtime: node
+    plan: free
+    rootDir: DanilkaShop
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: ADMIN_PASSWORD
+        sync: false   # задаётся вручную в Render dashboard — пароль админки
+      - key: NODE_VERSION
+        value: 20.11.1

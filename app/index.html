@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>DANILKA — UC Orders</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#000;
+    --fg:#fff;
+    --dim:rgba(255,255,255,.5);
+    --line:rgba(255,255,255,.12);
+    --glass:rgba(255,255,255,.06);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+    line-height:1.5;overflow-x:hidden;padding-bottom:120px;
+    min-height:100vh;
+  }
+  ::selection{background:#fff;color:#000}
+  .bg{position:fixed;inset:0;z-index:-2;background:
+    radial-gradient(70% 45% at 50% -5%,rgba(255,255,255,.09) 0%,transparent 60%),#000}
+  .bg::after{content:"";position:absolute;inset:0;
+    background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 90% 55% at 50% 0%,#000 25%,transparent 70%);
+    -webkit-mask-image:radial-gradient(ellipse 90% 55% at 50% 0%,#000 25%,transparent 70%)}
+
+  .wrap{max-width:520px;margin:0 auto;padding:0 18px}
+
+  /* glass top bar */
+  .topbar{
+    position:sticky;top:10px;z-index:60;margin:10px 12px 0;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 18px;border-radius:24px;
+    background:linear-gradient(120deg,rgba(255,255,255,.12),rgba(255,255,255,.04) 50%,rgba(255,255,255,.10));
+    backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
+    border:1px solid rgba(255,255,255,.18);
+    box-shadow:0 8px 32px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;letter-spacing:.08em}
+  .orb{width:26px;height:26px;border-radius:50%;border:3px solid #fff;position:relative}
+  .orb::after{content:"";position:absolute;inset:-9px;border:1px solid rgba(255,255,255,.25);border-radius:50%}
+  .badge{font-size:10px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;
+    padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--glass)}
+
+  /* header */
+  header{padding:44px 0 10px;text-align:center}
+  h1{font-size:clamp(30px,8vw,44px);font-weight:900;letter-spacing:-.01em;line-height:1.1}
+  .sub{color:var(--dim);font-size:13px;margin-top:10px;letter-spacing:.04em}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:26px}
+  .stat{border-radius:18px;padding:14px 8px;text-align:center;
+    background:var(--glass);border:1px solid var(--line);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+  .stat .v{font-size:17px;font-weight:800}
+  .stat .k{font-size:9px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+
+  section{padding:34px 0;scroll-margin-top:80px}
+  .sec-title{font-size:10px;color:var(--dim);letter-spacing:.3em;text-transform:uppercase;margin-bottom:18px}
+
+  /* packs */
+  .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pack{border-radius:20px;padding:16px 10px;text-align:center;cursor:pointer;
+    background:var(--glass);border:1px solid var(--line);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12);transition:.18s;position:relative}
+  .pack:active{transform:scale(.96)}
+  .pack.sel{background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.08));border-color:rgba(255,255,255,.55)}
+  .pack .uc{font-size:16px;font-weight:900}
+  .pack .b{font-size:9px;color:var(--dim);letter-spacing:.08em;margin-top:3px;text-transform:uppercase}
+  .pack .p{font-size:12px;font-weight:700;margin-top:6px}
+  .pack .chk{position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;
+    background:#fff;color:#000;display:none;align-items:center;justify-content:center}
+  .pack.sel .chk{display:flex}
+
+  /* panel / form */
+  .panel{border-radius:26px;padding:22px;
+    background:linear-gradient(150deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+    border:1px solid var(--line);
+    backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
+    box-shadow:0 12px 36px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.16)}
+  .fg{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  label{font-size:10px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+  input,select{
+    font-family:inherit;font-size:15px;color:#fff;
+    padding:13px 16px;border-radius:15px;border:1px solid var(--line);
+    background:rgba(0,0,0,.45);outline:none;transition:.2s;width:100%}
+  input:focus,select:focus{border-color:rgba(255,255,255,.45);box-shadow:0 0 0 4px rgba(255,255,255,.07)}
+  select option{background:#000}
+  .drop{border:1.5px dashed rgba(255,255,255,.25);border-radius:18px;padding:20px 16px;
+    text-align:center;color:var(--dim);font-size:12px;cursor:pointer;transition:.2s;background:rgba(0,0,0,.25);
+    display:flex;flex-direction:column;align-items:center;gap:8px}
+  .drop.over{border-color:#fff;color:#fff;background:rgba(255,255,255,.06)}
+  .drop img{max-width:100%;max-height:100px;border-radius:12px}
+  .drop .ic{opacity:.7}
+  .submit{width:100%;padding:16px;border:none;border-radius:18px;cursor:pointer;
+    font-family:inherit;font-size:13px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
+    color:#000;background:linear-gradient(180deg,#fff,#cfcfcf);
+    box-shadow:0 6px 22px rgba(255,255,255,.25), inset 0 1px 0 rgba(255,255,255,.9);transition:.18s}
+  .submit:active{transform:scale(.98)}
+
+  /* orders */
+  .order{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:20px;margin-bottom:10px;
+    background:var(--glass);border:1px solid var(--line);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+  .ologo{width:44px;height:44px;border-radius:13px;flex-shrink:0;background:#fff;color:#000;
+    display:flex;align-items:center;justify-content:center;font-weight:900;font-size:10px;overflow:hidden}
+  .ologo img{width:100%;height:100%;object-fit:cover}
+  .obody{flex:1;min-width:0}
+  .oname{font-weight:800;font-size:14px}
+  .ometa{font-size:11px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .oprice{font-weight:900;font-size:14px}
+  .st{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    padding:5px 11px;border-radius:999px;border:1px solid}
+  .st.new{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
+  .st.done{color:#000;background:#fff;border-color:#fff}
+  .empty{text-align:center;color:var(--dim);font-size:12px;letter-spacing:.1em;padding:36px 0;text-transform:uppercase}
+
+  /* DOCK */
+  .dock{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:70;
+    display:flex;gap:4px;align-items:center;padding:10px 12px;border-radius:26px;
+    background:linear-gradient(120deg,rgba(255,255,255,.14),rgba(255,255,255,.05) 45%,rgba(255,255,255,.12));
+    backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
+    border:1px solid rgba(255,255,255,.2);
+    box-shadow:0 12px 40px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.3);
+    max-width:calc(100vw - 24px)}
+  .di{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:transparent;
+    cursor:pointer;color:var(--dim);font-family:inherit;font-size:9px;font-weight:700;letter-spacing:.06em;
+    padding:8px 14px;border-radius:16px;transition:.18s}
+  .di svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .di.active{color:#000;background:#fff;box-shadow:0 4px 14px rgba(255,255,255,.25)}
+  .sep{width:1px;height:30px;background:rgba(255,255,255,.15)}
+
+  /* modal */
+  .modal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:20px}
+  .modal.open{display:flex}
+  .mbox{width:100%;max-width:380px;border-radius:26px;padding:26px;text-align:center;
+    background:rgba(10,10,10,.92);border:1px solid rgba(255,255,255,.2)}
+  .mbox h3{font-size:16px;font-weight:900;letter-spacing:.06em;margin-bottom:8px}
+  .mbox p{color:var(--dim);font-size:13px;margin-bottom:20px}
+  .mrow{display:flex;gap:10px}
+  .mbtn{flex:1;padding:13px;border-radius:15px;border:1px solid var(--line);background:transparent;
+    color:#fff;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.1em;cursor:pointer;text-transform:uppercase}
+  .mbtn.pri{background:#fff;color:#000;border-color:#fff}
+
+  .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(60px);z-index:100;
+    padding:12px 22px;border-radius:15px;font-size:12px;font-weight:700;letter-spacing:.08em;
+    background:rgba(0,0,0,.85);border:1px solid rgba(255,255,255,.4);color:#fff;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    transition:transform .28s cubic-bezier(.2,1.4,.4,1);pointer-events:none}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  footer{padding:30px 0 40px;text-align:center;color:var(--dim);font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<div class="topbar">
+  <div class="brand"><div class="orb"></div>DANILKA</div>
+  <div class="badge">UC · 24/7</div>
+</div>
+
+<div class="wrap">
+<header id="top">
+  <h1>Пополнение UC</h1>
+  <p class="sub">Выбери пакет, закинь ID — ордер улетит в работу</p>
+  <div class="stats">
+    <div class="stat"><div class="v">2 мин</div><div class="k">выдача</div></div>
+    <div class="stat"><div class="v">18k+</div><div class="k">ордеров</div></div>
+    <div class="stat"><div class="v">4.9★</div><div class="k">рейтинг</div></div>
+  </div>
+</header>
+
+<section id="new">
+  <div class="sec-title">// Новый ордер</div>
+  <div class="panel">
+    <div class="fg">
+      <label>Пакет UC</label>
+      <div class="packs" id="packs"></div>
+    </div>
+    <div class="fg">
+      <label>Игровой ID</label>
+      <input id="fPid" placeholder="5123456789" inputmode="numeric">
+    </div>
+    <div class="fg">
+      <label>Никнейм</label>
+      <input id="fNick" placeholder="Твой ник">
+    </div>
+    <div class="fg">
+      <label>Оплата</label>
+      <select id="fPay"><option>Карта</option><option>UZCARD / HUMO</option><option>USDT (TRC-20)</option><option>Крипта</option></select>
+    </div>
+    <div class="fg">
+      <label>Логотип (до 2 МБ)</label>
+      <div class="drop" id="drop">
+        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span id="dropTxt">Нажми или перетащи картинку</span>
+        <img id="dropPrev" style="display:none" alt="">
+        <input type="file" id="file" accept="image/*" hidden>
+      </div>
+    </div>
+    <button class="submit" id="submitBtn">Создать ордер</button>
+  </div>
+</section>
+
+<section id="orders">
+  <div class="sec-title">// Мои ордера</div>
+  <div id="list"></div>
+</section>
+
+<footer>DANILKA · NOT AFFILIATED WITH TENCENT</footer>
+</div>
+
+<!-- DOCK -->
+<div class="dock">
+  <button class="di active" data-go="top">
+    <svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>Главная</button>
+  <div class="sep"></div>
+  <button class="di" data-go="new">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/></svg>Ордер</button>
+  <div class="sep"></div>
+  <button class="di" data-go="orders">
+    <svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6"/></svg>Ордера</button>
+  <button class="di" onclick="openModal()">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v.5M12 11v5"/></svg>Инфо</button>
+</div>
+
+<div class="modal" id="modal">
+  <div class="mbox">
+    <h3>DANILKA UC</h3>
+    <p>Автоматический шоп пополнения UC. Ордер → оплата → выдача за ~2 минуты. Поддержка в Telegram круглосуточно.</p>
+    <div class="mrow">
+      <button class="mbtn" onclick="closeModal()">Закрыть</button>
+      <button class="mbtn pri" data-go="new">Создать ордер</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">OK</div>
+
+<script>
+/* ---- telegram ---- */
+const tg = window.Telegram?.WebApp;
+if(tg){ tg.ready(); tg.expand(); }
+
+/* ---- data ---- */
+const PACKS = [
+  {uc:60,   bonus:'',       price:0.99},
+  {uc:325,  bonus:'+25',    price:4.99},
+  {uc:660,  bonus:'+60',    price:9.99},
+  {uc:1800, bonus:'+300',   price:24.99},
+  {uc:3850, bonus:'+850',   price:49.99},
+  {uc:8100, bonus:'+2100',  price:99.99},
+];
+const fmt = n => '$' + n.toFixed(2);
+const KEY = 'danilka_orders_v1';
+
+const load = () => JSON.parse(localStorage.getItem(KEY) || '[]');
+const save = o => localStorage.setItem(KEY, JSON.stringify(o));
+
+let sel = 2;
+function renderPacks(){
+  document.getElementById('packs').innerHTML = PACKS.map((p,i) => `
+    <div class="pack ${i===sel?'sel':''}" onclick="sel=${i};renderPacks()">
+      <div class="chk"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div class="uc">${p.uc>=1000?(p.uc/1000)+'K':p.uc}</div>
+      <div class="b">${p.bonus||'uc'}</div>
+      <div class="p">${fmt(p.price)}</div>
+    </div>`).join('');
+}
+
+/* ---- logo upload ---- */
+let logo = null;
+const drop = document.getElementById('drop'), file = document.getElementById('file');
+drop.onclick = () => file.click();
+file.onchange = () => handle(file.files[0]);
+['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',ev=>handle(ev.dataTransfer.files[0]));
+function handle(f){
+  if(!f) return;
+  if(!f.type.startsWith('image/')) return toast('Только картинка');
+  if(f.size > 2*1024*1024) return toast('Больше 2 МБ');
+  const r = new FileReader();
+  r.onload = () => { logo = r.result;
+    const img = document.getElementById('dropPrev');
+    img.src = logo; img.style.display = 'block';
+    document.getElementById('dropTxt').textContent = '✓ ' + f.name; };
+  r.readAsDataURL(f);
+}
+
+/* ---- orders ---- */
+function create(){
+  const pid = document.getElementById('fPid').value.trim();
+  const nick = document.getElementById('fNick').value.trim();
+  if(!pid) return toast('Введи игровой ID');
+  if(!nick) return toast('Введи никнейм');
+  const p = PACKS[sel];
+  const o = {id:'DUC-'+Date.now().toString(36).toUpperCase(), pid, nick,
+    uc:p.uc, bonus:p.bonus, price:p.price, pay:document.getElementById('fPay').value,
+    logo, status:'new', ts:Date.now()};
+  const arr = load(); arr.unshift(o); save(arr);
+  document.getElementById('fPid').value=''; document.getElementById('fNick').value='';
+  renderOrders(); toast('Ордер создан ✦ ' + p.uc.toLocaleString() + ' UC');
+  go('orders');
+}
+function renderOrders(){
+  const arr = load();
+  document.getElementById('list').innerHTML = arr.length ? arr.map(o => `
+    <div class="order">
+      <div class="ologo">${o.logo ? `<img src="${o.logo}">` : 'UC'}</div>
+      <div class="obody">
+        <div class="oname">${o.uc.toLocaleString()} UC · ${o.nick}</div>
+        <div class="ometa">${o.id} · ID ${o.pid} · ${o.pay} · ${new Date(o.ts).toLocaleString('ru-RU')}</div>
+      </div>
+      <div class="oprice">${fmt(o.price)}</div>
+      <span class="st ${o.status}">${o.status==='new'?'в работе':'выполнен'}</span>
+    </div>`).join('') : '<div class="empty">ордеров пока нет</div>';
+}
+
+/* ---- nav ---- */
+function go(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.di[data-go]').forEach(b=>b.classList.toggle('active', b.dataset.go===id));
+  closeModal();
+}
+document.querySelectorAll('.di[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+const modal = document.getElementById('modal');
+function openModal(){modal.classList.add('open')}
+function closeModal(){modal.classList.remove('open')}
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
+document.querySelector('.mbtn.pri').onclick=()=>go('new');
+document.getElementById('submitBtn').onclick=create;
+
+/* ---- toast ---- */
+let tt;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2000)}
+
+renderPacks(); renderOrders();
+</script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DANILKA SHOP — Official Merch</title>
+<meta name="description" content="DANILKA SHOP — официальный мерч. Fair launch. Limited supply.">
+<style>
+  :root{
+    --bg:#000000;
+    --fg:#ffffff;
+    --dim:#9a9a9a;
+    --line:#1f1f1f;
+    --card:#0a0a0a;
+    --green:#2fff88;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  ::selection{background:#fff;color:#000}
+
+  .bg-grid{
+    position:fixed;inset:0;z-index:-1;
+    background-image:
+      linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+    background-size:56px 56px;
+    mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 30%,transparent 75%);
+    -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 30%,transparent 75%);
+  }
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* NAV */
+  nav{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:20px 0;position:sticky;top:0;z-index:50;
+    background:rgba(0,0,0,.82);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.12em;font-size:15px}
+  .brand .ring{width:22px;height:22px;border:3px solid #fff;border-radius:50%}
+  nav .links{display:flex;gap:26px;font-size:13px;align-items:center}
+  nav a{color:var(--dim);text-decoration:none;letter-spacing:.08em}
+  nav a:hover{color:#fff}
+  .cart-btn{
+    border:1px solid #fff;background:transparent;color:#fff;cursor:pointer;
+    font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.12em;
+    padding:8px 16px;text-transform:uppercase;transition:.18s;
+  }
+  .cart-btn:hover{background:#fff;color:#000}
+
+  /* HERO */
+  header{padding:88px 0 56px;text-align:center;position:relative}
+  .logo-ring{
+    width:120px;height:120px;border:10px solid #fff;border-radius:50%;
+    margin:0 auto 34px;
+    animation:pulse 3.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.25)}
+    50%{box-shadow:0 0 0 22px rgba(255,255,255,0)}
+  }
+  h1{font-size:clamp(40px,9vw,92px);letter-spacing:.18em;font-weight:800;line-height:1}
+  .tagline{color:var(--dim);margin-top:14px;font-size:14px;letter-spacing:.22em;text-transform:uppercase}
+
+  .stats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:1px;background:var(--line);border:1px solid var(--line);
+    margin:52px 0 8px;
+  }
+  .stat{background:var(--card);padding:22px 16px}
+  .stat .k{font-size:11px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px}
+  .stat .v{font-size:20px;font-weight:700}
+  .stat .sub{font-size:11px;color:var(--dim);margin-top:4px}
+  .live-dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:7px;animation:blink 1.6s infinite}
+  @keyframes blink{50%{opacity:.25}}
+
+  .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:38px}
+  .btn{
+    display:inline-block;padding:14px 30px;border:1px solid #fff;
+    text-decoration:none;color:#fff;letter-spacing:.14em;font-size:13px;font-weight:700;
+    transition:.18s;text-transform:uppercase;
+  }
+  .btn.solid{background:#fff;color:#000}
+  .btn.solid:hover{background:transparent;color:#fff}
+  .btn.ghost:hover{background:#fff;color:#000}
+
+  /* SECTIONS */
+  section{padding:72px 0;border-top:1px solid var(--line)}
+  .sec-title{font-size:13px;color:var(--dim);letter-spacing:.3em;text-transform:uppercase;margin-bottom:36px}
+
+  /* PRODUCTS */
+  .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+  .product{background:var(--card);padding:28px 24px;position:relative;display:flex;flex-direction:column;transition:.18s}
+  .product:hover{background:#101010}
+  .product .num{font-size:11px;color:#555;letter-spacing:.2em;margin-bottom:14px}
+  .product .thumb{
+    border:1px solid var(--line);background:#000;
+    height:120px;display:flex;align-items:center;justify-content:center;
+    font-size:44px;font-weight:800;letter-spacing:.1em;margin-bottom:18px;
+  }
+  .product h3{font-size:15px;letter-spacing:.1em;margin-bottom:8px}
+  .product .desc{color:var(--dim);font-size:12px;flex:1;margin-bottom:16px}
+  .product .row{display:flex;justify-content:space-between;align-items:center}
+  .price{font-size:18px;font-weight:700}
+  .price .cur{font-size:11px;color:var(--dim);letter-spacing:.1em}
+  .stock{font-size:10px;color:var(--dim);letter-spacing:.14em;margin-top:8px;text-transform:uppercase}
+  .stock.low{color:var(--green)}
+  .add{
+    border:1px solid #fff;background:transparent;color:#fff;cursor:pointer;
+    font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.14em;
+    padding:10px 18px;text-transform:uppercase;transition:.18s;
+  }
+  .add:hover{background:#fff;color:#000}
+  .add.done{border-color:var(--green);color:var(--green);background:transparent}
+
+  /* INFO TABLE */
+  .info-table{border:1px solid var(--line)}
+  .info-row{display:grid;grid-template-columns:200px 1fr;border-bottom:1px solid var(--line)}
+  .info-row:last-child{border-bottom:0}
+  .info-row .k{background:var(--card);padding:16px 20px;font-size:12px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;border-right:1px solid var(--line)}
+  .info-row .v{padding:16px 20px;font-size:14px;word-break:break-all}
+
+  /* CART DRAWER */
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:98;
+    opacity:0;pointer-events:none;transition:.25s;
+  }
+  .overlay.open{opacity:1;pointer-events:auto}
+  .cart{
+    position:fixed;top:0;right:-420px;width:400px;max-width:92vw;height:100vh;
+    background:#000;border-left:1px solid var(--line);z-index:99;
+    display:flex;flex-direction:column;transition:right .28s ease;
+  }
+  .cart.open{right:0}
+  .cart-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:20px 24px;border-bottom:1px solid var(--line);
+  }
+  .cart-head .t{font-size:14px;font-weight:700;letter-spacing:.2em}
+  .cart-close{background:none;border:0;color:var(--dim);font-size:22px;cursor:pointer;font-family:inherit}
+  .cart-close:hover{color:#fff}
+  .cart-items{flex:1;overflow-y:auto;padding:8px 0}
+  .cart-item{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--line);font-size:13px}
+  .cart-item .name{letter-spacing:.06em}
+  .cart-item .qty{color:var(--dim);font-size:12px;margin-top:4px}
+  .cart-item .right{text-align:right}
+  .cart-item .rm{background:none;border:0;color:#555;font-family:inherit;font-size:11px;cursor:pointer;letter-spacing:.1em;margin-top:4px}
+  .cart-item .rm:hover{color:#fff}
+  .cart-empty{color:var(--dim);text-align:center;padding:60px 24px;font-size:13px;letter-spacing:.1em}
+  .cart-foot{border-top:1px solid var(--line);padding:20px 24px}
+  .cart-total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;letter-spacing:.1em;margin-bottom:16px}
+  .checkout{
+    width:100%;padding:14px;border:1px solid #fff;background:#fff;color:#000;
+    font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;cursor:pointer;transition:.18s;
+  }
+  .checkout:hover{background:transparent;color:#fff}
+
+  /* TOAST */
+  .toast{
+    position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);
+    border:1px solid var(--green);color:var(--green);background:#000;
+    padding:12px 26px;font-size:12px;letter-spacing:.14em;z-index:100;
+    transition:transform .25s;text-transform:uppercase;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  footer{padding:44px 0;border-top:1px solid var(--line)}
+  footer .f{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--dim);letter-spacing:.1em}
+  footer a{color:var(--dim);text-decoration:none}
+  footer a:hover{color:#fff}
+
+  @media(max-width:640px){
+    nav .links a.hide-m{display:none}
+    .cart{width:100vw;right:-100vw}
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<nav>
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:center;width:100%">
+    <div class="brand"><div class="ring"></div>DANILKA&nbsp;SHOP</div>
+    <div class="links">
+      <a href="#catalog" class="hide-m">КАТАЛОГ</a>
+      <a href="#drop" class="hide-m">ДРОП</a>
+      <a href="#info" class="hide-m">ИНФО</a>
+      <button class="cart-btn" onclick="toggleCart()">КОРЗИНА [<span id="cartCount">0</span>]</button>
+    </div>
+  </div>
+</nav>
+
+<header class="wrap">
+  <div class="logo-ring"></div>
+  <h1>DANILKA SHOP</h1>
+  <div class="tagline">Limited supply · Fair prices · No rug</div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="k">Статус дропа</div>
+      <div class="v"><span class="live-dot"></span>LIVE</div>
+      <div class="sub">открыт прямо сейчас</div>
+    </div>
+    <div class="stat">
+      <div class="k">Продано позиций</div>
+      <div class="v" id="soldStat">0 / 6</div>
+      <div class="sub">лимитированная серия</div>
+    </div>
+    <div class="stat">
+      <div class="k">Доставка</div>
+      <div class="v">24/7</div>
+      <div class="sub">по всей галактике</div>
+    </div>
+    <div class="stat">
+      <div class="k">Гарантия</div>
+      <div class="v">100%</div>
+      <div class="sub">или вернём $GRID</div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#catalog" class="btn solid">Смотреть каталог</a>
+    <a href="#drop" class="btn ghost">Следующий дроп</a>
+  </div>
+</header>
+
+<section id="catalog">
+  <div class="wrap">
+    <div class="sec-title">// КАТАЛОГ — DROP 001</div>
+    <div class="products" id="products"></div>
+  </div>
+</section>
+
+<section id="drop">
+  <div class="wrap">
+    <div class="sec-title">// СЛЕДУЮЩИЙ ДРОП</div>
+    <div class="grad" style="max-width:640px;margin:0 auto;text-align:center">
+      <div class="bar" style="height:8px;background:#141414;border:1px solid var(--line);overflow:hidden">
+        <div id="dropFill" style="height:100%;background:#fff;width:0%;transition:width 1s ease"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:8px;letter-spacing:.1em">
+        <span>DROP 002</span><span id="dropPct">0%</span>
+      </div>
+      <p style="color:var(--dim);font-size:13px;margin-top:22px">Худи «DANILKA GENESIS» — 50 штук. Никогда больше. Кто успел — тот успел.</p>
+    </div>
+  </div>
+</section>
+
+<section id="info">
+  <div class="wrap">
+    <div class="sec-title">// ИНФОРМАЦИЯ</div>
+    <div class="info-table">
+      <div class="info-row"><div class="k">Магазин</div><div class="v">DANILKA SHOP — официальный мерч</div></div>
+      <div class="info-row"><div class="k">Оплата</div><div class="v">Карта / USDT / SOL / $GRID</div></div>
+      <div class="info-row"><div class="k">Доставка</div><div class="v">1–3 дня (Земля), 3–5 дней (Марс)</div></div>
+      <div class="info-row"><div class="k">Возврат</div><div class="v">Не было ни одного. И не будет.</div></div>
+      <div class="info-row"><div class="k">Поддержка</div><div class="v">@danilka_support — отвечаем быстрее, чем растёт чарт</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap f">
+    <span>© 2026 DANILKA SHOP. ALL RIGHTS RESERVED.</span>
+    <span>DYOR · NFA · WEAR RESPONSIBLY</span>
+  </div>
+</footer>
+
+<!-- CART -->
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+<div class="cart" id="cart">
+  <div class="cart-head">
+    <div class="t">КОРЗИНА</div>
+    <button class="cart-close" onclick="toggleCart()">×</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot">
+    <div class="cart-total"><span>ИТОГО</span><span id="cartTotal">0 ₽</span></div>
+    <button class="checkout" onclick="checkout()">Оформить заказ</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">Добавлено в корзину</div>
+
+<script>
+const PRODUCTS = [
+  {id:1, name:'ФУТБОЛКА «PUMP»',      desc:'Чёрная, 100% хлопок. Логотип спереди, чарт сзади.', price:2900, emoji:'PMP', stock:42},
+  {id:2, name:'КЕПКА «MOON»',          desc:'Чёрная с белой вышивкой. Один размер правит всеми.', price:1900, emoji:'M00N', stock:17},
+  {id:3, name:'ХУДИ «HODL»',           desc:'Толстая, тёплая. Держит тепло как ты держишь bags.', price:5900, emoji:'HODL', stock:8},
+  {id:4, name:'КРУЖКА «SIP»',          desc:'350 мл. Для кофе во время красных свечей.', price:1200, emoji:'SIP', stock:64},
+  {id:5, name:'СТИКЕРПАК «FOMO»',      desc:'12 стикеров, водостойкие. Клейся везде.', price:600, emoji:'FOMO', stock:128},
+  {id:6, name:'НОСОК «DIAMOND HANDS»', desc:'Пара. Не продаётся. Не стирается.*', price:900, emoji:'💎', stock:3, low:true},
+];
+
+const cart = {};
+const fmt = n => n.toLocaleString('ru-RU') + ' ₽';
+
+function renderProducts(){
+  document.getElementById('products').innerHTML = PRODUCTS.map(p => `
+    <div class="product">
+      <div class="num">#${String(p.id).padStart(3,'0')} / DROP 001</div>
+      <div class="thumb">${p.emoji}</div>
+      <h3>${p.name}</h3>
+      <div class="desc">${p.desc}</div>
+      <div class="row">
+        <div>
+          <div class="price">${fmt(p.price)}</div>
+          <div class="stock ${p.low ? 'low' : ''}">${p.low ? '⚠ ОСТАЛОСЬ ' + p.stock + ' ШТ' : 'В НАЛИЧИИ'}</div>
+        </div>
+        <button class="add" onclick="addToCart(${p.id}, this)">В корзину</button>
+      </div>
+    </div>`).join('');
+}
+
+function addToCart(id, btn){
+  cart[id] = (cart[id] || 0) + 1;
+  renderCart();
+  toast('Добавлено: ' + PRODUCTS.find(p => p.id === id).name);
+  if(btn){ btn.textContent = '✓ ДОБАВЛЕНО'; btn.classList.add('done');
+    setTimeout(() => { btn.textContent = 'В корзину'; btn.classList.remove('done'); }, 1200); }
+}
+
+function removeFromCart(id){ delete cart[id]; renderCart(); }
+
+function renderCart(){
+  const ids = Object.keys(cart);
+  const count = ids.reduce((s,id) => s + cart[id], 0);
+  const total = ids.reduce((s,id) => s + cart[id] * PRODUCTS.find(p => p.id == id).price, 0);
+  document.getElementById('cartCount').textContent = count;
+  document.getElementById('cartTotal').textContent = fmt(total);
+  document.getElementById('soldStat').textContent = count + ' / 6';
+  document.getElementById('cartItems').innerHTML = ids.length ? ids.map(id => {
+    const p = PRODUCTS.find(x => x.id == id);
+    return `<div class="cart-item">
+      <div><div class="name">${p.name}</div><div class="qty">${cart[id]} × ${fmt(p.price)}</div></div>
+      <div class="right"><div>${fmt(cart[id] * p.price)}</div>
+      <button class="rm" onclick="removeFromCart(${id})">УДАЛИТЬ</button></div>
+    </div>`;
+  }).join('') : '<div class="cart-empty">ПОКА ПУСТО.<br>ЧАРТ ЖДЁТ.</div>';
+}
+
+function toggleCart(){
+  document.getElementById('cart').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+
+function checkout(){
+  if(!Object.keys(cart).length){ toast('Корзина пуста'); return; }
+  toast('Заказ принят. WAGMI ✦');
+  Object.keys(cart).forEach(k => delete cart[k]);
+  renderCart();
+  setTimeout(toggleCart, 900);
+}
+
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// fake live drop progress
+let pct = 0;
+setInterval(() => {
+  pct = Math.min(100, pct + Math.random() * 2);
+  document.getElementById('dropFill').style.width = pct + '%';
+  document.getElementById('dropPct').textContent = Math.floor(pct) + '%';
+}, 1200);
+setTimeout(() => { pct = 47; }, 200);
+
+renderProducts();
+renderCart();
+</script>
+</body>
+</html>
