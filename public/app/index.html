@@ -101,12 +101,9 @@
   .order:nth-child(5n) .coin{animation-duration:4.1s}
 
   /* stack of mini UC cards — count = pack size */
-  .coins{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;align-items:center;
-    margin:10px auto 12px;min-height:44px;max-width:160px}
-  .coins .ucic{width:34px;height:26px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.55));
+  .pack .ucic{display:block;margin:10px auto 12px;object-fit:contain;
+    filter:drop-shadow(0 6px 12px rgba(0,0,0,.6));
     animation:icFloat 3.8s ease-in-out infinite}
-  .coins .ucic:nth-child(2n){animation-delay:-1.2s}
-  .coins .ucic:nth-child(3n){animation-delay:-2.4s}
   @keyframes icFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
   .coin.sm{width:46px;height:35px;font-size:13px;margin:0}
   .pack .uc{font-size:16px;font-weight:900}
@@ -283,7 +280,7 @@ function renderPacks(){
   document.getElementById('packs').innerHTML = PACKS.map((p,i)=>`
     <div class="pack ${i===sel?'sel':''}" onclick="sel=${i};renderPacks()">
       <div class="chk"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <div class="coins">${(`<img class="ucic" src="/img/uc${p.uc}.webp" alt="UC">`).repeat(p.n)}</div>
+      <img class="ucic" style="width:${34+p.n*4}px;height:${26+p.n*3}px" src="/img/uc${p.uc}.webp" alt="UC">
       <div class="uc">${p.uc>=1000?(p.uc/1000)+'K':p.uc}</div>
       <div class="b">${p.bonus||'uc'}</div>
       <div class="p">${fmt(p.price)}</div>
