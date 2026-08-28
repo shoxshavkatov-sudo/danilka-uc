@@ -11,6 +11,8 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '';                       // Telegram
 const CRYPTO_BOT_TOKEN = process.env.CRYPTO_BOT_TOKEN || '';         // @CryptoBot API token (crypto payments)
 const RUB_PER_STAR = +(process.env.RUB_PER_STAR || 1.4);             // rough rub price of 1 Star
 const RUB_USD = +(process.env.RUB_USD || 92);                        // rub per USDT for crypto pricing
+const BOT_USERNAME = process.env.BOT_USERNAME || 'danilka_uc_bot';   // for referral links
+const REF_BONUS = +(process.env.REF_BONUS || 50);                    // rub credited to referrer
 
 const SESSIONS = new Set();
 
@@ -23,7 +25,7 @@ app.get('/control-7f3a', (req, res) => res.redirect('/control-7f3a/'));
 
 /* ---------- storage ---------- */
 const DB = path.join(__dirname, 'data.json');
-let db = { orders: [], balances: {}, pendingCrypto: {} };
+let db = { orders: [], balances: {}, pendingCrypto: {}, referrals: {} };
 try { db = Object.assign(db, JSON.parse(fs.readFileSync(DB, 'utf8'))); } catch {}
 const persist = () => fs.writeFile(DB, JSON.stringify(db), () => {});
 
@@ -73,7 +75,30 @@ app.post('/api/logout', (req, res) => {
 });
 
 /* ---------- profile / balance ---------- */
-app.get('/api/me', (req, res) => res.json({ id: userId(req), balance: bal(userId(req)) }));
+app.get('/api/me', (req, res) => {
+  const uid = userId(req);
+  const code = uid.replace(/^tg/, '');
+  const refCount = Object.values(db.referrals).filter(r => r.ref === code).length;
+  return res.json({ id: uid, balance: bal(uid), refCode: code, refCount, refEarned: refCount * REF_BONUS, botUsername: BOT_USERNAME });
+});
+
+/* register referral (called once when app opened via ?start=refXXX) */
+app.post('/api/referral', (req, res) => {
+  const uid = userId(req);
+  const code = String(req.body.code || '').replace(/\D/g, '');
+  if (!code || uid === 'tg' + code) return res.json({ ok: false });
+  if (!db.referrals[uid]) {
+    db.referrals[uid] = { ref: code, credited: false };
+    persist();
+  }
+  res.json({ ok: true });
+});
+
+/* user's own orders */
+app.get('/api/my/orders', (req, res) => {
+  const uid = userId(req);
+  res.json(db.orders.filter(o => o.uid === uid).slice(0, 10));
+});
 
 /* ---------- deposits ---------- */
 // Telegram Stars invoice
@@ -178,6 +203,7 @@ app.post('/api/orders', (req, res) => {
   if (pay === 'Баланс' && bal(uid) < +price) return res.status(402).json({ error: 'insufficient balance' });
   const order = {
     id: 'DUC-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase(),
+    uid,
     pid: String(pid).slice(0, 32), nick: String(nick).slice(0, 32),
     uc: +uc || 0, bonus: bonus || '', price: +price || 0,
     pay: String(pay || 'Карта').slice(0, 32),
@@ -185,6 +211,15 @@ app.post('/api/orders', (req, res) => {
     status: 'new', ts: Date.now(),
   };
   if (pay === 'Баланс') { db.balances[uid] = bal(uid) - +price; }
+  /* referral bonus: referrer gets REF_BONUS on referred user's first order */
+  const refRec = db.referrals[uid];
+  if (refRec && !refRec.credited) {
+    const referrerId = 'tg' + refRec.ref;
+    if (db.balances[referrerId] !== undefined || referrerId !== uid) {
+      db.balances[referrerId] = bal(referrerId) + REF_BONUS;
+      refRec.credited = true;
+    }
+  }
   db.orders.unshift(order);
   persist();
   res.json(order);

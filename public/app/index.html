@@ -95,6 +95,12 @@
   @keyframes viewIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
   .promo-hint{font-size:11px;color:var(--green);min-height:16px;letter-spacing:.04em}
+  .myord{display:flex;justify-content:space-between;align-items:center;padding:11px 0;
+    border-bottom:1px solid var(--line);font-size:13px}
+  .myord:last-child{border-bottom:none}
+  .myord .t{font-weight:700}
+  .myord .m{font-size:10px;color:var(--dim)}
+  .myord .pr{font-weight:800;white-space:nowrap}
   .streak-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:13px 16px;
     border-radius:16px;border:1px solid var(--line);background:var(--glass)}
   .streak-row .st{flex:1;font-size:11px;color:var(--dim);line-height:1.4}
@@ -453,7 +459,31 @@
         <div class="st">Ежедневный бонус: <b id="streakPct">+0%</b> к пополнению</div>
         <div class="days" id="streakDays"></div>
       </div>
+
       <div style="height:14px"></div>
+      <div class="panel" style="padding:18px">
+        <div style="font-size:11px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:10px">Приглашай друзей</div>
+        <div class="st" style="font-size:12px;color:var(--dim);margin-bottom:12px">Друг делает первый заказ — <b style="color:var(--green)">тебе <span id="refBonus">50</span> ₽</b> на баланс</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div id="refLink" style="flex:1;font-size:11px;color:var(--green);word-break:break-all;
+            background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:12px;padding:11px 13px">...</div>
+          <button class="qbtn" style="padding:11px 16px" onclick="copyRef()">Копировать</button>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--dim)">
+          <span>Друзей: <b id="refCount" style="color:#fff">0</b></span>
+          <span>Заработано: <b id="refEarned" style="color:var(--green)">0 ₽</b></span>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+      <div class="panel" style="padding:18px">
+        <div style="font-size:11px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:12px">Мои заказы</div>
+        <div id="myOrders"></div>
+      </div>
+
+      <div style="height:14px"></div>
+      <a class="bigbtn ghost" id="supportLink" href="https://t.me/danilka_uc_bot" target="_blank"
+        style="display:block;text-align:center;text-decoration:none;line-height:1.3">Написать в поддержку</a>
       <div class="fg"><label>Другая сумма</label><input id="topAmt" placeholder="Например, 2000" inputmode="numeric"></div>
       <div class="fg"><label>Промокод</label>
         <div style="display:flex;gap:8px">
@@ -493,6 +523,13 @@
 <script>
 const tg = window.Telegram?.WebApp;
 if(tg){ tg.ready(); tg.expand(); }
+/* register referral from bot start link (?start=refXXX -> start_param) */
+try{
+  const sp = tg?.initDataUnsafe?.start_param;
+  if(sp && sp.startsWith('ref')){
+    fetch('/api/referral', { method:'POST', headers: H(), body: JSON.stringify({ code: sp.slice(3) }) });
+  }
+}catch{}
 const haptic = (type) => {
   try{
     if(type === 'ok' && tg?.HapticFeedback) return tg.HapticFeedback.notificationOccurred('success');
@@ -565,7 +602,34 @@ async function refreshBalance(){
     const r = await fetch('/api/me', { headers: H() });
     const j = await r.json();
     if(j.balance !== balance){ animateBalance(j.balance); balance = j.balance; renderBalance(); }
+    renderReferral(j);
+    renderMyOrders();
   }catch{}
+}
+function renderReferral(me){
+  if(!me.refCode) return;
+  document.getElementById('refLink').textContent = `t.me/${me.botUsername}?start=ref${me.refCode}`;
+  document.getElementById('refCount').textContent = me.refCount || 0;
+  document.getElementById('refEarned').textContent = fmt((me.refEarned || 0));
+  document.getElementById('refBonus').textContent = me.refEarned ? '50' : '50';
+  document.getElementById('supportLink').href = `https://t.me/${me.botUsername}`;
+}
+async function renderMyOrders(){
+  try{
+    const arr = await (await fetch('/api/my/orders', { headers: H() })).json();
+    document.getElementById('myOrders').innerHTML = arr.length ? arr.map(o => `
+      <div class="myord">
+        <div>
+          <div class="t">${o.uc.toLocaleString('ru-RU')} UC</div>
+          <div class="m">${new Date(o.ts).toLocaleDateString('ru-RU')} · ${o.status === 'new' ? 'в работе' : 'выполнен'}</div>
+        </div>
+        <div class="pr" style="color:${o.status === 'done' ? 'var(--green)' : '#fff'}">${fmt(o.price)}</div>
+      </div>`).join('') : '<div style="font-size:12px;color:var(--dim)">Пока пусто — сделай первый заказ</div>';
+  }catch{}
+}
+function copyRef(){
+  const link = document.getElementById('refLink').textContent;
+  navigator.clipboard?.writeText('https://' + link).then(() => { toast('Ссылка скопирована'); haptic('ok'); });
 }
 setInterval(refreshBalance, 10000);
 
