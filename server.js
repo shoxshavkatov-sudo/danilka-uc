@@ -1,3 +1,12 @@
+/* load .env if present (local dev) — Render env vars take precedence in prod */
+const fs_env = require('fs');
+try {
+  for (const line of fs_env.readFileSync(__dirname + '/.env', 'utf8').split('\n')) {
+    const m = /^([A-Z_]+)=(.*)$/.exec(line.trim());
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+} catch {}
+
 const express = require('express');
 const crypto = require('crypto');
 const fs = require('fs');
