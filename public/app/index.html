@@ -289,7 +289,7 @@
     padding:10px 22px;border-radius:16px;min-width:76px}
   .di svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .di{transition:color .3s}
-  .dock-pill{position:absolute;top:10px;bottom:10px;left:12px;height:calc(100% - 20px);
+  .dock-pill{position:absolute;top:10px;bottom:10px;left:0;width:0;pointer-events:none;
     border-radius:16px;
     background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(216,220,255,.92));
     box-shadow:0 4px 16px rgba(255,255,255,.28), 0 0 20px rgba(52,245,160,.18);
@@ -297,7 +297,6 @@
   .di{color:var(--dim);z-index:1}
   .di.active{color:#000}
   .sep{width:1px;height:30px;background:rgba(255,255,255,.15)}
-  .dock{position:relative}
 
   .toast{position:fixed;bottom:180px;left:50%;transform:translateX(-50%) translateY(20px);z-index:100;
     padding:12px 22px;border-radius:15px;font-size:12px;font-weight:700;letter-spacing:.08em;
@@ -569,13 +568,16 @@ function updateBuybar(){
 
 /* ---------- views ---------- */
 function moveDockPill(){
-  const active = document.querySelector('.dock .di.active');
+  const dock = document.querySelector('.dock');
+  const active = dock?.querySelector('.di.active');
   const pill = document.getElementById('dockPill');
-  if(!active || !pill) return;
-  const pr = pill.parentElement.getBoundingClientRect();
-  const ar = active.getBoundingClientRect();
+  if(!dock || !active || !pill) return;
+  const dr = dock.getBoundingClientRect(), ar = active.getBoundingClientRect();
   pill.style.width = ar.width + 'px';
-  pill.style.transform = `translateX(${ar.left - pr.left}px)`;
+  /* pill left:0 is the dock border box; center it on the button */
+  pill.style.transform = `translateX(${ar.left - dr.left}px)`;
+  pill.style.top = (ar.top - dr.top) + 'px';
+  pill.style.height = ar.height + 'px';
 }
 function go(v){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
@@ -786,7 +788,9 @@ document.head.appendChild(rippleStyle);
 
 renderPacks(); renderBalance(); renderQuick(); renderTopLbl(); refreshBalance();
 requestAnimationFrame(moveDockPill);
+setTimeout(moveDockPill, 150);
 window.addEventListener('resize', moveDockPill);
+window.addEventListener('orientationchange', () => setTimeout(moveDockPill, 200));
 </script>
 </body>
 </html>
