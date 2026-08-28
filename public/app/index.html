@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>DANILKA — UC</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
@@ -10,7 +10,11 @@
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{background:var(--bg);color:var(--fg);
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
-    line-height:1.5;overflow-x:hidden;padding-bottom:190px;min-height:100vh}
+    line-height:1.5;overflow-x:hidden;
+    padding-bottom:calc(190px + env(safe-area-inset-bottom, 0px));
+    min-height:100dvh;
+    overscroll-behavior-y:none;
+    -webkit-text-size-adjust:100%}
   ::selection{background:#fff;color:#000}
   .bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(70% 45% at 50% -5%,rgba(255,255,255,.09),transparent 60%),#000}
   .bg::after{content:"";position:absolute;inset:0;
@@ -33,7 +37,7 @@
     0%{transform:translateY(-20px) rotate(0);opacity:1}
     100%{transform:translateY(105vh) rotate(720deg);opacity:.4}}
 
-  .topbar{position:sticky;top:10px;z-index:60;margin:10px 12px 0;
+  .topbar{position:sticky;top:10px;z-index:60;margin:calc(10px + env(safe-area-inset-top, 0px)) 12px 0;
     display:flex;align-items:center;justify-content:space-between;
     padding:12px 18px;border-radius:24px;
     background:linear-gradient(120deg,rgba(255,255,255,.12),rgba(255,255,255,.04) 50%,rgba(255,255,255,.10));
@@ -55,6 +59,7 @@
   .sec-title{font-size:10px;color:var(--dim);letter-spacing:.3em;text-transform:uppercase;margin-bottom:18px}
 
   .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:360px){.packs{grid-template-columns:repeat(2,1fr)}}
   .pack{border-radius:20px;padding:14px 10px;text-align:center;cursor:pointer;
     background:var(--glass);border:1px solid var(--line);
     backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
@@ -77,12 +82,12 @@
     box-shadow:0 12px 36px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.16)}
   .fg{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
   label{font-size:10px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;font-weight:700}
-  input{font-family:inherit;font-size:15px;color:#fff;padding:13px 16px;border-radius:15px;
+  input{font-family:inherit;font-size:16px;color:#fff;padding:13px 16px;border-radius:15px;
     border:1px solid var(--line);background:rgba(0,0,0,.45);outline:none;transition:.2s;width:100%}
   input:focus{border-color:rgba(255,255,255,.45);box-shadow:0 0 0 4px rgba(255,255,255,.07)}
 
   /* buy bar */
-  .buybar{position:fixed;bottom:92px;left:12px;right:12px;z-index:65;max-width:496px;margin:0 auto;
+  .buybar{position:fixed;bottom:calc(92px + env(safe-area-inset-bottom, 0px));left:12px;right:12px;z-index:65;max-width:496px;margin:0 auto;
     display:none;padding:10px;border-radius:22px;
     background:linear-gradient(120deg,rgba(255,255,255,.14),rgba(255,255,255,.05) 50%,rgba(255,255,255,.12));
     backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
@@ -171,7 +176,7 @@
   .qbtn.sel{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.12);transform:translateY(-2px)}
 
   /* dock */
-  .dock{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:70;
+  .dock{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%);z-index:70;
     display:flex;gap:4px;align-items:center;padding:10px 12px;border-radius:26px;
     background:linear-gradient(120deg,rgba(255,255,255,.14),rgba(255,255,255,.05) 45%,rgba(255,255,255,.12));
     backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
@@ -179,8 +184,8 @@
     box-shadow:0 12px 40px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.3);
     max-width:calc(100vw - 24px)}
   .di{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:transparent;
-    cursor:pointer;color:var(--dim);font-family:inherit;font-size:9px;font-weight:700;letter-spacing:.06em;
-    padding:8px 20px;border-radius:16px;transition:.18s}
+    cursor:pointer;color:var(--dim);font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.06em;
+    padding:10px 22px;border-radius:16px;transition:.18s;min-width:76px}
   .di svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .di.active{color:#000;background:#fff;box-shadow:0 4px 14px rgba(255,255,255,.25)}
   .sep{width:1px;height:30px;background:rgba(255,255,255,.15)}
@@ -367,6 +372,27 @@ const haptic = (type) => {
   }catch{}
 };
 
+/* Telegram chrome: black header/bg, disable vertical swipes */
+try{
+  tg?.setHeaderColor?.('#000000');
+  tg?.setBackgroundColor?.('#000000');
+  tg?.disableVerticalSwipes?.();
+  tg?.enableClosingConfirmation?.();
+}catch{}
+
+/* Telegram BackButton: profile/checkout -> main, main -> close */
+try{
+  const BB = tg?.BackButton;
+  if(BB){
+    BB.onClick(() => {
+      const v = document.querySelector('.view.on').id;
+      if(v === 'v-main'){ tg.close(); }
+      else if(v === 'v-profile' || v === 'v-checkout'){ go('main'); BB.hide(); }
+      else { go('main'); BB.hide(); }
+    });
+  }
+}catch{}
+
 const PACKS = [
   {uc:60,bonus:'',price:129,n:1},{uc:325,bonus:'+25',price:599,n:2},{uc:660,bonus:'+60',price:1199,n:3},
   {uc:1800,bonus:'+300',price:2899,n:6},{uc:3850,bonus:'+850',price:5799,n:9},{uc:8100,bonus:'+2100',price:11499,n:12},
@@ -382,7 +408,23 @@ fNick.addEventListener('input', () => localStorage.setItem('danilka_nick', fNick
 
 /* ---------- balance ---------- */
 let balance = +(localStorage.getItem('danilka_bal') || 0);
-const setBalance = v => { balance = v; localStorage.setItem('danilka_bal', v); renderBalance(); };
+let balAnim = null;
+const setBalance = v => {
+  const from = balance;
+  balance = v; localStorage.setItem('danilka_bal', v);
+  /* animated counter */
+  cancelAnimationFrame(balAnim);
+  const t0 = performance.now(), dur = 700;
+  const tick = t => {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    const cur = Math.round(from + (v - from) * e);
+    document.getElementById('balTop').textContent = fmt(cur);
+    document.getElementById('balBig').textContent = fmt(cur);
+    if(k < 1) balAnim = requestAnimationFrame(tick);
+  };
+  balAnim = requestAnimationFrame(tick);
+  document.getElementById('balanceNote').textContent = 'Баланс: ' + fmt(v);
+};
 function renderBalance(){
   document.getElementById('balTop').textContent = fmt(balance);
   document.getElementById('balBig').textContent = fmt(balance);
@@ -420,7 +462,25 @@ function go(v){
   document.querySelectorAll('.di').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
   document.getElementById('buybar').classList.toggle('on', v==='main');
   window.scrollTo({top:0});
+  try{ v === 'main' ? tg?.BackButton?.hide() : tg?.BackButton?.show(); }catch{}
 }
+
+/* horizontal swipe: main <-> profile */
+(() => {
+  let sx = 0, sy = 0, tracking = false;
+  document.addEventListener('touchstart', e => {
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+  }, {passive:true});
+  document.addEventListener('touchend', e => {
+    if(!tracking) return; tracking = false;
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = e.changedTouches[0].clientY - sy;
+    if(Math.abs(dx) < 70 || Math.abs(dy) > 50) return;
+    const v = document.querySelector('.view.on').id;
+    if(v === 'v-main' && dx < 0) go('profile');
+    else if(v === 'v-profile' && dx > 0) go('main');
+  }, {passive:true});
+})();
 
 /* ---------- checkout ---------- */
 let payMethod = 'balance';
