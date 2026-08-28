@@ -58,7 +58,7 @@
   section{padding:26px 0}
   .sec-title{font-size:10px;color:var(--dim);letter-spacing:.3em;text-transform:uppercase;margin-bottom:18px}
 
-  .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .packs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
   @media(max-width:360px){.packs{grid-template-columns:repeat(2,1fr)}}
   .pack{border-radius:20px;padding:14px 10px;text-align:center;cursor:pointer;
     background:var(--glass);border:1px solid var(--line);
@@ -68,6 +68,7 @@
   .pack.sel{background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.08));border-color:rgba(255,255,255,.55)}
   .pack.sel .chk{display:flex}
   .pack .ucic{display:block;margin:8px auto 10px;object-fit:contain;
+    max-width:calc(100% - 14px);height:auto;
     filter:drop-shadow(0 6px 12px rgba(0,0,0,.6))}
   .pack .uc{font-size:15px;font-weight:900}
   .pack .b{font-size:9px;color:var(--dim);letter-spacing:.08em;margin-top:3px;text-transform:uppercase}
