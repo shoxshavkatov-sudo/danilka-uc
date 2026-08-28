@@ -268,11 +268,15 @@ const fmt = n => n.toLocaleString('ru-RU') + ' ₽';
 const API = '';
 
 let sel = 2;
+function selectPack(i){
+  sel = i;
+  document.querySelectorAll('.pack').forEach((el,idx)=>el.classList.toggle('sel', idx===i));
+}
 function renderPacks(){
   document.getElementById('packs').innerHTML = PACKS.map((p,i)=>`
-    <div class="pack ${i===sel?'sel':''}" onclick="sel=${i};renderPacks()">
+    <div class="pack ${i===sel?'sel':''}" onclick="selectPack(${i})">
       <div class="chk"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <img class="ucic" style="width:${44+p.n*6}px;height:${34+p.n*4.5}px" src="/img/uc${p.uc}.webp" alt="UC">
+      <img class="ucic" style="width:${44+p.n*6}px;height:${34+p.n*4.5}px" src="/img/uc${p.uc}.webp" alt="UC" loading="eager" decoding="async">
       <div class="uc">${p.uc>=1000?(p.uc/1000)+'K':p.uc}</div>
       <div class="b">${p.bonus||'uc'}</div>
       <div class="p">${fmt(p.price)}</div>
