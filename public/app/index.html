@@ -57,6 +57,46 @@
     box-shadow:inset 0 1px 0 rgba(255,255,255,.12);transition:.18s;position:relative}
   .pack:active{transform:scale(.96)}
   .pack.sel{background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.08));border-color:rgba(255,255,255,.55)}
+  /* ---- 3D UC coin ---- */
+  .coin{
+    position:relative;width:48px;height:48px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:13px;color:#04331b;letter-spacing:.02em;
+    background:radial-gradient(circle at 35% 28%,#d6ffe9 0%,#7dffb9 22%,#2fff88 48%,#0d9e4f 78%,#05602f 100%);
+    box-shadow:
+      inset 0 -7px 12px rgba(0,40,16,.55),
+      inset 0 5px 9px rgba(255,255,255,.65),
+      inset 0 0 0 3px rgba(255,255,255,.25),
+      0 10px 22px rgba(47,255,136,.35),
+      0 3px 6px rgba(0,0,0,.5);
+    animation:coinFloat 3.4s ease-in-out infinite;
+    transform-style:preserve-3d;
+  }
+  /* milled edge */
+  .coin::before{
+    content:"";position:absolute;inset:-5px;border-radius:50%;z-index:-1;
+    background:repeating-conic-gradient(from 0deg,#0d9e4f 0deg 6deg,#05602f 6deg 12deg);
+    box-shadow:0 6px 14px rgba(0,0,0,.5), inset 0 2px 4px rgba(255,255,255,.3);
+  }
+  /* rotating glare */
+  .coin::after{
+    content:"";position:absolute;inset:2px;border-radius:50%;
+    background:conic-gradient(from 0deg,transparent 0deg 70deg,rgba(255,255,255,.85) 95deg,transparent 125deg 360deg);
+    mix-blend-mode:screen;animation:coinSpin 4.5s linear infinite;
+  }
+  .coin span{position:relative;z-index:1;text-shadow:0 1px 0 rgba(255,255,255,.5)}
+  @keyframes coinFloat{
+    0%,100%{transform:translateY(0) rotateY(-14deg)}
+    50%{transform:translateY(-6px) rotateY(14deg)}
+  }
+  @keyframes coinSpin{to{transform:rotate(360deg)}}
+  .order:nth-child(2n) .coin{animation-delay:-1.1s}
+  .order:nth-child(3n) .coin{animation-delay:-2.2s}
+  .order:nth-child(5n) .coin{animation-duration:4.1s}
+  .coin.sm{width:40px;height:40px;font-size:11px}
+  .coin.sm::before{inset:-4px}
+
+  .pack .coin{margin:2px auto 10px}
   .pack .uc{font-size:16px;font-weight:900}
   .pack .b{font-size:9px;color:var(--dim);letter-spacing:.08em;margin-top:3px;text-transform:uppercase}
   .pack .p{font-size:12px;font-weight:700;margin-top:6px}
@@ -230,6 +270,7 @@ function renderPacks(){
   document.getElementById('packs').innerHTML = PACKS.map((p,i)=>`
     <div class="pack ${i===sel?'sel':''}" onclick="sel=${i};renderPacks()">
       <div class="chk"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div class="coin" style="width:${38+p.uc/300}px;height:${38+p.uc/300}px"><span>UC</span></div>
       <div class="uc">${p.uc>=1000?(p.uc/1000)+'K':p.uc}</div>
       <div class="b">${p.bonus||'uc'}</div>
       <div class="p">${fmt(p.price)}</div>
@@ -281,7 +322,7 @@ async function renderOrders(){
     const arr = await (await fetch(API + '/api/orders')).json();
     document.getElementById('list').innerHTML = arr.length ? arr.map(o=>`
       <div class="order">
-        <div class="ologo">${o.logo ? `<img src="${o.logo}">` : 'UC'}</div>
+        <div class="ologo">${o.logo ? `<img src="${o.logo}">` : '<div class="coin sm"><span>UC</span></div>'}</div>
         <div class="obody">
           <div class="oname">${o.uc.toLocaleString()} UC · ${o.nick}</div>
           <div class="ometa">${o.id} · ID ${o.pid} · ${o.pay} · ${new Date(o.ts).toLocaleString('ru-RU')}</div>
