@@ -94,6 +94,12 @@ app.post('/api/referral', (req, res) => {
   res.json({ ok: true });
 });
 
+/* public shop stats */
+app.get('/api/stats', (req, res) => res.json({
+  totalOrders: db.orders.length,
+  totalDone: db.orders.filter(o => o.status === 'done').length
+}));
+
 /* user's own orders */
 app.get('/api/my/orders', (req, res) => {
   const uid = userId(req);
