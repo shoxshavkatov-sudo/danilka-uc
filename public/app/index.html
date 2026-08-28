@@ -17,6 +17,29 @@
     -webkit-text-size-adjust:100%}
   ::selection{background:#fff;color:#000}
   .bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(70% 45% at 50% -5%,rgba(255,255,255,.09),transparent 60%),radial-gradient(50% 30% at 50% 0%,rgba(52,245,160,.07),transparent 70%),#000}
+  /* character backdrop */
+  .char{
+    position:fixed;bottom:-30px;right:-40px;z-index:-1;
+    height:78vh;max-height:760px;width:auto;pointer-events:none;
+    filter:drop-shadow(0 0 60px rgba(52,245,160,.16));
+    opacity:.5;
+    animation:charFloat 7s ease-in-out infinite;
+    transition:opacity .5s, transform .5s;
+  }
+  @keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+  @media(max-width:640px){.char{height:52vh;right:-30px;opacity:.4}}
+
+  /* floating green particles */
+  .particles{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+  .p-dot{position:absolute;bottom:-10px;border-radius:50%;
+    background:radial-gradient(circle,rgba(52,245,160,.8),rgba(52,245,160,0) 70%);
+    animation:pRise linear infinite}
+  @keyframes pRise{
+    0%{transform:translateY(0) translateX(0);opacity:0}
+    10%{opacity:.7}
+    90%{opacity:.4}
+    100%{transform:translateY(-110vh) translateX(40px);opacity:0}}
+
   .bg::after{content:"";position:absolute;inset:0;
     background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
     linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
@@ -216,6 +239,8 @@
 </head>
 <body>
 <div class="bg"></div>
+<img class="char" id="charImg" src="/img/character.png" alt="">
+<div class="particles" id="particles"></div>
 
 <div class="topbar">
   <div class="brand"><div class="orb"></div>DANILKA</div>
@@ -470,6 +495,8 @@ function updateBuybar(){
 
 /* ---------- views ---------- */
 function go(v){
+  const char = document.getElementById('charImg');
+  if(char) char.style.opacity = (v === 'main') ? '' : '0.18';
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   document.getElementById('v-' + v).classList.add('on');
   document.querySelectorAll('.di').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
@@ -641,6 +668,21 @@ function confetti(){
 let tt;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2000)}
+
+/* floating particles */
+(() => {
+  const box = document.getElementById('particles');
+  for(let i = 0; i < 14; i++){
+    const d = document.createElement('div');
+    d.className = 'p-dot';
+    const size = 3 + Math.random()*6;
+    d.style.width = d.style.height = size + 'px';
+    d.style.left = Math.random()*100 + 'vw';
+    d.style.animationDuration = (9 + Math.random()*10) + 's';
+    d.style.animationDelay = -Math.random()*18 + 's';
+    box.appendChild(d);
+  }
+})();
 
 renderPacks(); renderBalance(); renderQuick(); renderTopLbl(); refreshBalance();
 </script>
