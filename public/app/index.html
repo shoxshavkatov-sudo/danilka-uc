@@ -310,7 +310,7 @@
     padding:10px 22px;border-radius:16px;min-width:76px}
   .di svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .di{transition:color .3s}
-  .dock-pill{position:absolute;top:10px;bottom:10px;left:0;width:0;pointer-events:none;
+  .dock-pill{position:absolute;top:10px;left:0;width:0;pointer-events:none;
     border-radius:16px;
     background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(216,220,255,.92));
     box-shadow:0 4px 16px rgba(255,255,255,.28), 0 0 20px rgba(52,245,160,.18);
@@ -408,6 +408,18 @@
   </section>
 </div>
 
+<!-- ================= MY ORDERS ================= -->
+<div class="view" id="v-orders">
+  <section>
+    <button class="back" onclick="go('main')"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Назад</button>
+    <div class="sec-title">// Мои заказы</div>
+    <div id="myOrders"></div>
+    <div style="height:16px"></div>
+    <a class="bigbtn ghost" id="supportLink2" href="https://t.me/danilka_uc_bot" target="_blank"
+      style="display:block;text-align:center;text-decoration:none;line-height:1.3">Написать в поддержку</a>
+  </section>
+</div>
+
 <!-- ================= PROFILE ================= -->
 <div class="view" id="v-profile">
   <section>
@@ -475,15 +487,7 @@
         </div>
       </div>
 
-      <div style="height:14px"></div>
-      <div class="panel" style="padding:18px">
-        <div style="font-size:11px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:12px">Мои заказы</div>
-        <div id="myOrders"></div>
-      </div>
 
-      <div style="height:14px"></div>
-      <a class="bigbtn ghost" id="supportLink" href="https://t.me/danilka_uc_bot" target="_blank"
-        style="display:block;text-align:center;text-decoration:none;line-height:1.3">Написать в поддержку</a>
       <div class="fg"><label>Другая сумма</label><input id="topAmt" placeholder="Например, 2000" inputmode="numeric"></div>
       <div class="fg"><label>Промокод</label>
         <div style="display:flex;gap:8px">
@@ -516,6 +520,9 @@
   <div class="sep"></div>
   <button class="di" data-view="profile" onclick="go('profile')">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>Профиль</button>
+  <div class="sep"></div>
+  <button class="di" data-view="orders" onclick="go('orders')">
+    <svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6"/></svg>Заказы</button>
 </div>
 
 <div class="toast" id="toast">OK</div>
@@ -552,7 +559,6 @@ try{
     BB.onClick(() => {
       const v = document.querySelector('.view.on').id;
       if(v === 'v-main'){ tg.close(); }
-      else if(v === 'v-profile' || v === 'v-checkout'){ go('main'); BB.hide(); }
       else { go('main'); BB.hide(); }
     });
   }
@@ -611,8 +617,9 @@ function renderReferral(me){
   document.getElementById('refLink').textContent = `t.me/${me.botUsername}?start=ref${me.refCode}`;
   document.getElementById('refCount').textContent = me.refCount || 0;
   document.getElementById('refEarned').textContent = fmt((me.refEarned || 0));
-  document.getElementById('refBonus').textContent = me.refEarned ? '50' : '50';
-  document.getElementById('supportLink').href = `https://t.me/${me.botUsername}`;
+  document.getElementById('refBonus').textContent = '50';
+  const su = `https://t.me/${me.botUsername}`;
+  document.getElementById('supportLink2').href = su;
 }
 async function renderMyOrders(){
   try{
