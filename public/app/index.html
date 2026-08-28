@@ -6,7 +6,7 @@
 <title>DANILKA — UC</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  :root{--bg:#000;--fg:#fff;--dim:rgba(255,255,255,.5);--line:rgba(255,255,255,.12);--glass:rgba(255,255,255,.06)}
+  :root{--bg:#000;--fg:#fff;--dim:rgba(255,255,255,.5);--line:rgba(255,255,255,.12);--glass:rgba(255,255,255,.06);--green:#34f5a0;--green-dim:rgba(52,245,160,.55);--green-glow:rgba(52,245,160,.18)}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{background:var(--bg);color:var(--fg);
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
@@ -16,7 +16,7 @@
     overscroll-behavior-y:none;
     -webkit-text-size-adjust:100%}
   ::selection{background:#fff;color:#000}
-  .bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(70% 45% at 50% -5%,rgba(255,255,255,.09),transparent 60%),#000}
+  .bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(70% 45% at 50% -5%,rgba(255,255,255,.09),transparent 60%),radial-gradient(50% 30% at 50% 0%,rgba(52,245,160,.07),transparent 70%),#000}
   .bg::after{content:"";position:absolute;inset:0;
     background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
     linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
@@ -47,8 +47,8 @@
   .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;letter-spacing:.08em}
   .orb{width:26px;height:26px;border-radius:50%;border:3px solid #fff;position:relative}
   .orb::after{content:"";position:absolute;inset:-9px;border:1px solid rgba(255,255,255,.25);border-radius:50%}
-  .bal{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;
-    padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--glass);cursor:pointer}
+  .bal{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--green);
+    padding:7px 14px;border-radius:999px;border:1px solid var(--green-dim);background:var(--green-glow);cursor:pointer}
   .bal img{width:18px;height:14px;object-fit:contain}
 
   header{padding:36px 0 6px;text-align:center}
@@ -60,21 +60,32 @@
 
   .packs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
   @media(max-width:360px){.packs{grid-template-columns:repeat(2,1fr)}}
-  .pack{border-radius:20px;padding:14px 10px;text-align:center;cursor:pointer;
-    background:var(--glass);border:1px solid var(--line);
+  .pack{border-radius:20px;padding:16px 10px 18px;text-align:center;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+    border:1px solid var(--line);
     backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.12);transition:.18s;position:relative}
   .pack:active{transform:scale(.96)}
-  .pack.sel{background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.08));border-color:rgba(255,255,255,.55)}
+  .pack:hover{border-color:rgba(255,255,255,.3)}
+  .pack.sel{background:linear-gradient(150deg,rgba(52,245,160,.16),rgba(52,245,160,.04));
+    border-color:var(--green-dim);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 0 22px var(--green-glow)}
+  .pack.sel .uc{color:var(--green)}
+  .pack.sel .p{color:var(--green)}
   .pack.sel .chk{display:flex}
-  .pack .ucic{display:block;margin:8px auto 10px;object-fit:contain;
-    max-width:calc(100% - 14px);height:auto;
+  .pack .ucwrap{height:78px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .pack .ucic{display:block;object-fit:contain;max-width:100%;max-height:78px;
     filter:drop-shadow(0 6px 12px rgba(0,0,0,.6))}
+  .pack .uc, .pack .b, .pack .p{width:100%}
+  .pack .p{margin-top:auto}
+  .pack .b{min-height:14px}
   .pack .uc{font-size:15px;font-weight:900}
   .pack .b{font-size:9px;color:var(--dim);letter-spacing:.08em;margin-top:3px;text-transform:uppercase}
   .pack .p{font-size:12px;font-weight:700;margin-top:5px}
   .pack .chk{position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;
-    background:#fff;color:#000;display:none;align-items:center;justify-content:center}
+    background:var(--green);color:#04160c;display:none;align-items:center;justify-content:center;
+    box-shadow:0 0 12px var(--green-glow)}
 
   .panel{border-radius:26px;padding:22px;
     background:linear-gradient(150deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
@@ -99,9 +110,9 @@
   .buybar .t{font-size:13px;font-weight:800}
   .buybar .s{font-size:11px;color:var(--dim)}
   .buybar button{border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:900;
-    letter-spacing:.1em;text-transform:uppercase;color:#000;padding:14px 24px;border-radius:16px;
-    background:linear-gradient(180deg,#fff,#cfcfcf);
-    box-shadow:0 6px 22px rgba(255,255,255,.25), inset 0 1px 0 rgba(255,255,255,.9)}
+    letter-spacing:.1em;text-transform:uppercase;color:#04160c;padding:14px 24px;border-radius:16px;
+    background:linear-gradient(180deg,#8dffc8,#34f5a0);
+    box-shadow:0 6px 22px rgba(52,245,160,.35), inset 0 1px 0 rgba(255,255,255,.6)}
   .buybar button:active{transform:scale(.97)}
 
   /* checkout */
@@ -111,7 +122,7 @@
   .sumrow.total{border-bottom:none;font-size:16px;font-weight:900}
   .payopt{display:flex;align-items:center;gap:12px;padding:15px 16px;border-radius:18px;margin-bottom:10px;
     cursor:pointer;border:1px solid var(--line);background:var(--glass);transition:.18s}
-  .payopt.sel{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1)}
+  .payopt.sel{border-color:var(--green-dim);background:var(--green-glow)}
   .payopt .rad{width:18px;height:18px;border-radius:50%;border:2px solid var(--dim);flex-shrink:0}
   .payopt.sel .rad{border-color:#fff;background:#fff;box-shadow:inset 0 0 0 3px #000}
   .payopt .pt{font-size:14px;font-weight:700}
@@ -128,10 +139,11 @@
   .back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
   /* success */
-  .okring{width:90px;height:90px;border-radius:50%;border:4px solid #fff;margin:30px auto 20px;
+  .okring{width:90px;height:90px;border-radius:50%;border:4px solid var(--green);margin:30px auto 20px;
+    box-shadow:0 0 34px var(--green-glow);
     display:flex;align-items:center;justify-content:center;
     animation:okpop .5s cubic-bezier(.2,1.6,.4,1)}
-  .okring svg{width:38px;height:38px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+  .okring svg{width:38px;height:38px;stroke:var(--green);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
   @keyframes okpop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
 
   /* profile */
@@ -154,7 +166,7 @@
     font-size:12px;font-weight:800;letter-spacing:.08em;padding:11px 4px;border-radius:14px;transition:color .25s}
   .ptab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .ptab.active{color:#000}
-  .ptab-pill{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px)/3);
+  .ptab-pill{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 15px)/2);
     border-radius:14px;background:linear-gradient(180deg,#fff,#d8d8d8);
     box-shadow:0 4px 14px rgba(255,255,255,.25);
     transition:transform .32s cubic-bezier(.3,1.4,.4,1)}
@@ -168,13 +180,14 @@
   .pm:active{transform:scale(.96)}
   .pm b{font-size:14px;letter-spacing:.06em}
   .pm span{font-size:10px;color:var(--dim);letter-spacing:.04em}
-  .pm.active{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.12);
-    box-shadow:0 0 0 3px rgba(255,255,255,.06);transform:translateY(-2px)}
+  .pm.active{border-color:var(--green-dim);background:var(--green-glow);
+    box-shadow:0 0 18px var(--green-glow);transform:translateY(-2px)}
+  .pm.active b{color:var(--green)}
 
   .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
   .qbtn{border:1px solid var(--line);background:var(--glass);color:#fff;cursor:pointer;
     font-family:inherit;font-size:13px;font-weight:800;padding:13px 4px;border-radius:14px;transition:.18s}
-  .qbtn.sel{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.12);transform:translateY(-2px)}
+  .qbtn.sel{border-color:var(--green-dim);background:var(--green-glow);color:var(--green);transform:translateY(-2px)}
 
   /* dock */
   .dock{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%);z-index:70;
@@ -294,12 +307,9 @@
 
     <!-- payment tabs -->
     <div class="panel">
-      <div class="ptabs" id="ptabs">
-        <div class="ptab active" data-tab="uz" onclick="pickTab('uz')">
-          <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="3"/><path d="M2.5 10.5h19"/></svg>УЗ
-        </div>
-        <div class="ptab" data-tab="ru" onclick="pickTab('ru')">
-          <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="3"/><path d="M9 10.5l5 2.5-5 2.5z"/></svg>РФ
+      <div class="ptabs" id="ptabs" style="grid-template-columns:repeat(2,1fr)">
+        <div class="ptab active" data-tab="ru" onclick="pickTab('ru')">
+          <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="3"/><path d="M9 10.5l5 2.5-5 2.5z"/></svg>Карты РФ
         </div>
         <div class="ptab" data-tab="crypto" onclick="pickTab('crypto')">
           <svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Крипта
@@ -307,15 +317,7 @@
         <div class="ptab-pill" id="ptabPill"></div>
       </div>
 
-      <div class="pm-pane on" id="pane-uz">
-        <div class="pm-grid">
-          <button class="pm active" onclick="pickPayM('UZCARD',this)"><b>UZCARD</b><span>узбекская карта</span></button>
-          <button class="pm" onclick="pickPayM('HUMO',this)"><b>HUMO</b><span>узбекская карта</span></button>
-          <button class="pm" onclick="pickPayM('Click',this)"><b>CLICK</b><span>кошелёк</span></button>
-          <button class="pm" onclick="pickPayM('Payme',this)"><b>PAYME</b><span>кошелёк</span></button>
-        </div>
-      </div>
-      <div class="pm-pane" id="pane-ru">
+      <div class="pm-pane on" id="pane-ru">
         <div class="pm-grid">
           <button class="pm active" onclick="pickPayM('МИР',this)"><b>МИР</b><span>карта РФ</span></button>
           <button class="pm" onclick="pickPayM('СБП',this)"><b>СБП</b><span>по номеру телефона</span></button>
@@ -453,7 +455,7 @@ function renderPacks(){
   document.getElementById('packs').innerHTML = PACKS.map((p,i)=>`
     <div class="pack ${i===sel?'sel':''}" style="animation-delay:${i*70}ms" onclick="selectPack(${i})">
       <div class="chk"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <img class="ucic" style="width:${44+p.n*6}px;height:${34+p.n*4.5}px" src="/img/uc${p.uc}.webp" alt="UC" loading="eager" decoding="async">
+      <div class="ucwrap"><img class="ucic" style="width:${40+p.n*3.4}px" src="/img/uc${p.uc}.webp" alt="UC" loading="eager" decoding="async"></div>
       <div class="uc">${p.uc>=1000?(p.uc/1000)+'K':p.uc}</div>
       <div class="b">${p.bonus||'uc'}</div>
       <div class="p">${fmt(p.price)}</div>
@@ -543,8 +545,8 @@ async function sendOrder(p, pay){
 /* ---------- profile: tabs + payment ---------- */
 const QUICK = [300, 500, 1000, 3000];
 let quickSel = 1000;
-let payTab = 'uz';
-let payMethodTop = 'UZCARD';
+let payTab = 'ru';
+let payMethodTop = 'МИР';
 
 function pickTab(t){
   payTab = t; haptic('light');
@@ -584,7 +586,7 @@ async function topUp(){
       toast('Открываю оплату ' + method);
       tg?.openTelegramLink?.(j.payUrl) || window.open(j.payUrl, '_blank');
       await pollCrypto(j.invoiceId);
-    } else if(tab === 'uz' || tab === 'ru'){
+    } else if(tab === 'ru'){
       /* карты: реальный эквайринг через мерчанта — пока через Stars/крипту */
       const r = await fetch('/api/deposit/stars', { method:'POST', headers:H(),
         body: JSON.stringify({ amount }) });
