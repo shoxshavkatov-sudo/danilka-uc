@@ -264,11 +264,19 @@
     box-shadow:0 12px 40px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.3);
     max-width:calc(100vw - 24px)}
   .di{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:transparent;
-    cursor:pointer;color:var(--dim);font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.06em;
-    padding:10px 22px;border-radius:16px;transition:.18s;min-width:76px}
+    cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.06em;
+    padding:10px 22px;border-radius:16px;min-width:76px}
   .di svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  .di.active{color:#000;background:#fff;box-shadow:0 4px 14px rgba(255,255,255,.25)}
+  .di{transition:color .3s}
+  .dock-pill{position:absolute;top:10px;bottom:10px;left:12px;height:calc(100% - 20px);
+    border-radius:16px;
+    background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(216,220,255,.92));
+    box-shadow:0 4px 16px rgba(255,255,255,.28), 0 0 20px rgba(52,245,160,.18);
+    transition:transform .38s cubic-bezier(.32,1.3,.4,1), width .38s cubic-bezier(.32,1.3,.4,1)}
+  .di{color:var(--dim);z-index:1}
+  .di.active{color:#000}
   .sep{width:1px;height:30px;background:rgba(255,255,255,.15)}
+  .dock{position:relative}
 
   .toast{position:fixed;bottom:180px;left:50%;transform:translateX(-50%) translateY(20px);z-index:100;
     padding:12px 22px;border-radius:15px;font-size:12px;font-weight:700;letter-spacing:.08em;
@@ -425,6 +433,7 @@
 
 <!-- DOCK -->
 <div class="dock">
+  <div class="dock-pill" id="dockPill"></div>
   <button class="di active" data-view="main" onclick="go('main')">
     <svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>Главная</button>
   <div class="sep"></div>
@@ -538,10 +547,20 @@ function updateBuybar(){
 }
 
 /* ---------- views ---------- */
+function moveDockPill(){
+  const active = document.querySelector('.dock .di.active');
+  const pill = document.getElementById('dockPill');
+  if(!active || !pill) return;
+  const pr = pill.parentElement.getBoundingClientRect();
+  const ar = active.getBoundingClientRect();
+  pill.style.width = ar.width + 'px';
+  pill.style.transform = `translateX(${ar.left - pr.left}px)`;
+}
 function go(v){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
   document.getElementById('v-' + v).classList.add('on');
   document.querySelectorAll('.di').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+  moveDockPill();
   document.getElementById('buybar').classList.toggle('on', v==='main');
   window.scrollTo({top:0});
   try{ v === 'main' ? tg?.BackButton?.hide() : tg?.BackButton?.show(); }catch{}
@@ -745,6 +764,8 @@ document.head.appendChild(rippleStyle);
 })();
 
 renderPacks(); renderBalance(); renderQuick(); renderTopLbl(); refreshBalance();
+requestAnimationFrame(moveDockPill);
+window.addEventListener('resize', moveDockPill);
 </script>
 </body>
 </html>
