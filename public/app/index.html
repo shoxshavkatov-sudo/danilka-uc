@@ -103,11 +103,11 @@
   /* stack of mini UC cards — count = pack size */
   .coins{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;align-items:center;
     margin:10px auto 12px;min-height:44px;max-width:160px}
-  .coins .coin{width:22px;height:17px;font-size:0}
-  .coins .coin::before{transform:rotate(-9deg) translate(-3px,-3px)}
-  .coins .coin .face{inset:2px}
-  .coins .coin:nth-child(2n){animation-delay:-1.2s}
-  .coins .coin:nth-child(3n){animation-delay:-2.4s}
+  .coins .ucic{width:34px;height:26px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.55));
+    animation:icFloat 3.8s ease-in-out infinite}
+  .coins .ucic:nth-child(2n){animation-delay:-1.2s}
+  .coins .ucic:nth-child(3n){animation-delay:-2.4s}
+  @keyframes icFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
   .coin.sm{width:46px;height:35px;font-size:13px;margin:0}
   .pack .uc{font-size:16px;font-weight:900}
   .pack .b{font-size:9px;color:var(--dim);letter-spacing:.08em;margin-top:3px;text-transform:uppercase}
@@ -145,6 +145,7 @@
   .ologo{width:44px;height:44px;border-radius:13px;flex-shrink:0;background:#fff;color:#000;
     display:flex;align-items:center;justify-content:center;font-weight:900;font-size:10px;overflow:hidden}
   .ologo img{width:100%;height:100%;object-fit:cover}
+  .ologo .ucic-s{width:44px;height:34px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.55))}
   .obody{flex:1;min-width:0}
   .oname{font-weight:800;font-size:14px}
   .ometa{font-size:11px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -282,7 +283,7 @@ function renderPacks(){
   document.getElementById('packs').innerHTML = PACKS.map((p,i)=>`
     <div class="pack ${i===sel?'sel':''}" onclick="sel=${i};renderPacks()">
       <div class="chk"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <div class="coins">${('<div class="coin"><div class="face"></div></div>').repeat(p.n)}</div>
+      <div class="coins">${(`<img class="ucic" src="/img/uc${p.uc}.webp" alt="UC">`).repeat(p.n)}</div>
       <div class="uc">${p.uc>=1000?(p.uc/1000)+'K':p.uc}</div>
       <div class="b">${p.bonus||'uc'}</div>
       <div class="p">${fmt(p.price)}</div>
@@ -334,7 +335,7 @@ async function renderOrders(){
     const arr = await (await fetch(API + '/api/orders')).json();
     document.getElementById('list').innerHTML = arr.length ? arr.map(o=>`
       <div class="order">
-        <div class="ologo">${o.logo ? `<img src="${o.logo}">` : '<div class="coin sm"><div class="face"><span>UC</span></div></div>'}</div>
+        <div class="ologo">${o.logo ? `<img src="${o.logo}">` : '<img class="ucic-s" src="/img/uc' + (o.uc>=1000?'1800':String(o.uc)) + '.webp" alt="UC">'}</div>
         <div class="obody">
           <div class="oname">${o.uc.toLocaleString()} UC · ${o.nick}</div>
           <div class="ometa">${o.id} · ID ${o.pid} · ${o.pay} · ${new Date(o.ts).toLocaleString('ru-RU')}</div>

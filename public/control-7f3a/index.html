@@ -77,6 +77,7 @@
   .ologo{width:56px;height:56px;border-radius:14px;flex-shrink:0;
     display:flex;align-items:center;justify-content:center;overflow:visible;cursor:pointer}
   .ologo img{width:48px;height:48px;object-fit:cover;border-radius:13px}
+  .ologo .ucic-s{width:48px;height:37px;object-fit:contain;border-radius:0;filter:drop-shadow(0 4px 8px rgba(0,0,0,.55))}
 
   /* ---- 3D UC card (PUBG style) ---- */
   .coin{
@@ -292,7 +293,7 @@ function render(all){
   document.getElementById('count').textContent = arr.length + ' показано';
   document.getElementById('list').innerHTML = arr.length ? arr.map(o=>`
     <div class="order ${o.status}">
-      <div class="ologo" ${o.logo ? `onclick="showLogo('${o.logo}')"` : ''}>${o.logo ? `<img src="${o.logo}">` : '<div class="coin"><div class="face"><span>UC</span></div></div>'}</div>
+      <div class="ologo" ${o.logo ? `onclick="showLogo('${o.logo}')"` : ''}>${o.logo ? `<img src="${o.logo}">` : '<img class="ucic-s" src="/img/uc' + (o.uc>=1000?'1800':String(o.uc)) + '.webp" alt="UC">'}</div>
       <div class="obody">
         <div class="oname">${o.uc.toLocaleString()} UC ${o.bonus?'· '+o.bonus:''} — ${o.nick}</div>
         <div class="ometa">${o.id} · ID ${o.pid} · ${o.pay} · ${new Date(o.ts).toLocaleString('ru-RU')}</div>
