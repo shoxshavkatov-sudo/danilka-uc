@@ -94,7 +94,13 @@
   .view.on{display:block;animation:viewIn .34s cubic-bezier(.2,1,.3,1)}
   @keyframes viewIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-  .pack{opacity:0;animation:packIn .45s cubic-bezier(.2,1,.3,1) forwards}
+  .packs.entering .pack{animation:packIn .45s cubic-bezier(.2,1,.3,1) backwards}
+  .packs.entering .pack:nth-child(1){animation-delay:0s}
+  .packs.entering .pack:nth-child(2){animation-delay:.06s}
+  .packs.entering .pack:nth-child(3){animation-delay:.12s}
+  .packs.entering .pack:nth-child(4){animation-delay:.18s}
+  .packs.entering .pack:nth-child(5){animation-delay:.24s}
+  .packs.entering .pack:nth-child(6){animation-delay:.3s}
   @keyframes packIn{from{opacity:0;transform:translateY(16px) scale(.94)}to{opacity:1;transform:none}}
 
   .confetti{position:fixed;inset:0;pointer-events:none;z-index:95;overflow:hidden}
@@ -135,7 +141,7 @@
   .pack:active{transform:scale(.96)}
   .pack:hover{border-color:rgba(255,255,255,.3)}
   .pack{overflow:hidden}
-  .pack.sel{border-color:var(--green-dim);opacity:1;animation:selGlow 2.4s ease-in-out infinite}
+  .pack.sel{border-color:var(--green-dim);opacity:1 !important;animation:selGlow 2.4s ease-in-out infinite}
   /* liquid green flowing inside */
   .pack.sel::before{content:"";position:absolute;inset:0;z-index:0;
     background:linear-gradient(120deg,
@@ -545,8 +551,11 @@ function selectPack(i){
   updateBuybar();
 }
 function renderPacks(){
-  document.getElementById('packs').innerHTML = PACKS.map((p,i)=>`
-    <div class="pack ${i===sel?'sel':''}" style="animation-delay:${i*70}ms" onclick="selectPack(${i})">
+  const box = document.getElementById('packs');
+  box.classList.add('entering');
+  setTimeout(() => box.classList.remove('entering'), 900);
+  box.innerHTML = PACKS.map((p,i)=>`
+    <div class="pack ${i===sel?'sel':''}" onclick="selectPack(${i})">
       <div class="ucwrap"><img class="ucic" style="width:${40+p.n*3.4}px" src="/img/uc${p.uc}.webp" alt="UC" loading="eager" decoding="async"></div>
       <div class="uc">${p.uc>=1000?(p.uc/1000)+'K':p.uc}</div>
       <div class="b">${p.bonus||'uc'}</div>
