@@ -19,15 +19,14 @@
   .bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(70% 45% at 50% -5%,rgba(255,255,255,.09),transparent 60%),radial-gradient(50% 30% at 50% 0%,rgba(52,245,160,.07),transparent 70%),#000}
   /* character backdrop */
   .char{
-    position:fixed;bottom:-30px;right:-40px;z-index:-1;
-    height:78vh;max-height:760px;width:auto;pointer-events:none;
-    filter:drop-shadow(0 0 60px rgba(52,245,160,.16));
-    opacity:.5;
-    animation:charFloat 7s ease-in-out infinite;
-    transition:opacity .5s, transform .5s;
+    position:fixed;top:calc(58px + env(safe-area-inset-top,0px));right:-18px;z-index:-1;
+    height:44vh;max-height:480px;width:auto;pointer-events:none;
+    filter:drop-shadow(0 0 50px rgba(52,245,160,.2));
+    opacity:.55;
+    transform:scaleX(-1);
+    transition:opacity .5s;
   }
-  @keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-  @media(max-width:640px){.char{height:52vh;right:-30px;opacity:.4}}
+  @media(max-width:640px){.char{height:36vh;right:-26px;opacity:.45}}
 
   /* floating green particles */
   .particles{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
