@@ -42,6 +42,36 @@
     0%,100%{box-shadow:0 0 0 0 rgba(52,245,160,.45)}
     70%{box-shadow:0 0 0 12px rgba(52,245,160,0)}}
 
+  /* glass panels: green edge light on hover/idle */
+  .panel{position:relative;overflow:hidden}
+  .panel::before{content:"";position:absolute;top:0;left:-70%;width:45%;height:1px;
+    background:linear-gradient(90deg,transparent,var(--green),transparent);
+    animation:edgeScan 4.5s ease-in-out infinite}
+  @keyframes edgeScan{0%{left:-70%}60%,100%{left:130%}}
+
+  /* tilt on press for packs */
+  .pack{transition:transform .18s, border-color .18s, box-shadow .18s, background .18s}
+  .pack:active{transform:scale(.95) rotate(-1deg)}
+
+  /* buy button glow breathing */
+  .buybar button{animation:btnGlow 2.8s ease-in-out infinite}
+  @keyframes btnGlow{
+    0%,100%{box-shadow:0 6px 22px rgba(52,245,160,.3), inset 0 1px 0 rgba(255,255,255,.6)}
+    50%{box-shadow:0 6px 34px rgba(52,245,160,.65), inset 0 1px 0 rgba(255,255,255,.6)}}
+
+  /* balance pill sparkle */
+  .bal{position:relative;overflow:hidden}
+  .bal::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.25) 50%,transparent 60%);
+    animation:profShine 4s ease-in-out infinite}
+
+  /* scanline sweep on sec titles */
+  .sec-title{position:relative;display:inline-block}
+  .sec-title::after{content:"";position:absolute;left:0;bottom:-4px;height:1px;width:100%;
+    background:linear-gradient(90deg,var(--green),transparent);
+    transform:scaleX(0);transform-origin:left;animation:secLine 3.6s ease-in-out infinite}
+  @keyframes secLine{0%{transform:scaleX(0)}45%,70%{transform:scaleX(1)}100%{transform:scaleX(0);transform-origin:right}}
+
   /* floating green particles */
   .particles{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
   .p-dot{position:absolute;bottom:-10px;border-radius:50%;
@@ -680,6 +710,24 @@ function confetti(){
 let tt;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2000)}
+
+/* ripple: green expanding circle from tap point */
+document.addEventListener('pointerdown', e => {
+  const target = e.target.closest('button, .pack, .payopt, .pm, .qbtn');
+  if(!target) return;
+  const rect = target.getBoundingClientRect();
+  const rip = document.createElement('span');
+  const size = Math.max(rect.width, rect.height) * 1.6;
+  rip.style.cssText = `position:fixed;left:${e.clientX - size/2}px;top:${e.clientY - size/2}px;
+    width:${size}px;height:${size}px;border-radius:50%;pointer-events:none;z-index:99;
+    background:radial-gradient(circle,rgba(52,245,160,.35) 0%,rgba(52,245,160,0) 70%);
+    animation:ripple .55s ease-out forwards`;
+  document.body.appendChild(rip);
+  setTimeout(() => rip.remove(), 600);
+});
+const rippleStyle = document.createElement('style');
+rippleStyle.textContent = '@keyframes ripple{from{transform:scale(0);opacity:1}to{transform:scale(1);opacity:0}}';
+document.head.appendChild(rippleStyle);
 
 /* floating particles */
 (() => {
